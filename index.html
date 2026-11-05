@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>Y.O.K.E. — Personal AI for Dhanya</title>
+  <title>Y.O.K.E. — For Dhanya Forever</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -110,7 +110,7 @@
   <section id="lock" class="screen">
     <div class="lock-aurora"></div>
     <h1>Y.O.K.E.</h1>
-    <p class="tag">You're Our Kind of Everything • Personal AI</p>
+    <p class="tag">You're Our Kind of Everything</p>
     <p class="lock-wait">Something special is counting down for you, <span class="her"></span></p>
     <div id="countdown" class="cd-grid">
       <div class="cd-tile"><span id="cdDays" class="cd-num">00</span><small class="cd-lbl">DAYS</small></div>
@@ -122,35 +122,50 @@
   </section>
 
   <!-- =========================================================
-       3D CHIBI DOLL X-O GAME MODAL
+       2-LEVEL SECRET QUEST + 3D CHIBI DOLL X-O MODAL
        ========================================================= -->
   <section id="gamesModal" class="games-overlay hidden">
     <div class="games-panel">
       <div class="games-header">
         <div class="games-tabs">
-          <span class="gtab active">Chibi Doll X-O Battle</span>
+          <button type="button" id="tabQuestBtn" class="gtab active">2-Level Secret Quest</button>
+          <button type="button" id="tabXoBtn" class="gtab">Chibi Doll X-O</button>
         </div>
-        <button type="button" id="closeGamesBtn" class="close-games" aria-label="Close Game">✕</button>
+        <button type="button" id="closeGamesBtn" class="close-games" aria-label="Close">✕</button>
       </div>
 
-      <div id="xoView" class="game-view">
+      <!-- TAB 1: 2-LEVEL HUMAN QUEST (Unlocks Hair-Heart Photo + Romantic Note) -->
+      <div id="questView" class="game-view">
+        <div class="quest-map">
+          <div id="qNode1" class="quest-node current">1</div>
+          <div class="quest-connector"></div>
+          <div id="qNode2" class="quest-node">2</div>
+        </div>
+        <div id="questStageBody" class="yn-card-body"></div>
+      </div>
+
+      <!-- TAB 2: CHIBI DOLL X-O BATTLE -->
+      <div id="xoView" class="game-view hidden">
         <div class="xo-scoreboard">
           <div class="score-pill her-s"><img src="images/xo_her.png" class="score-mini-av" alt=""> <span class="her"></span>: <b id="scoreHer">0</b></div>
           <div class="score-pill draw-s">Draw: <b id="scoreDraw">0</b></div>
-          <div class="score-pill yoke-s"><img src="images/xo_me.png" class="score-mini-av" alt=""> Y.O.K.E. AI: <b id="scoreYoke">0</b></div>
+          <div class="score-pill yoke-s"><img src="images/xo_me.png" class="score-mini-av" alt=""> <span class="you-cine"></span>: <b id="scoreYoke">0</b></div>
         </div>
-        <div id="xoStatus" class="xo-status">Un turn dhan chello! Tap a box to place your Queen Doll</div>
+        <div id="xoStatus" class="xo-status">Un turn dhan chello! Enna jeichu Level 1 Quest-ah unlock pannu.</div>
         <div class="xo-board-wrap">
           <div id="xoBoard" class="xo-board"></div>
           <svg id="xoWinSvg" class="xo-win-svg hidden" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
         </div>
-        <button type="button" id="xoResetBtn" class="game-action-btn">New Round</button>
+        <div class="quest-final-actions">
+          <button type="button" id="xoResetBtn" class="game-action-btn">New Round</button>
+          <button type="button" onclick="document.getElementById('tabQuestBtn').click()" class="game-action-btn secondary">Go to 2-Level Quest</button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- =========================================================
-       Y.O.K.E. MAIN AI INTERFACE (DAILY COMPANION FOR DHANYA)
+       Y.O.K.E. MAIN INTERFACE (DAILY COMPANION FOR DHANYA)
        ========================================================= -->
   <div id="appLayout" class="app-layout hidden">
     <aside id="historySidebar" class="history-sidebar">
@@ -159,7 +174,6 @@
           <img id="sideAvatar" class="side-avatar" alt="">
           <div>
             <div class="side-title">Chat History</div>
-            <div class="side-sub">Synced to Cloud</div>
           </div>
         </div>
         <button id="closeSidebarBtn" type="button" class="close-side-btn">✕</button>
@@ -167,10 +181,6 @@
       <button id="newChatBtn" type="button" class="new-chat-btn">+ New Chat</button>
       <div class="side-label">SAVED CONVERSATIONS</div>
       <div id="sessionList" class="session-list"></div>
-      <div class="sidebar-bottom-actions">
-        <button id="clearChatBtn" type="button" class="clear-hist-btn" title="Delete current chat messages">Clear Chat</button>
-        <button id="clearHistoryBtn" type="button" class="clear-hist-btn" title="Delete all history">Clear All</button>
-      </div>
     </aside>
 
     <main id="app" class="main-chat-col">
@@ -190,33 +200,32 @@
           <div>
             <div class="gem-title-row">
               <h2 class="brand">Y.O.K.E.</h2>
-              <span class="model-pill" id="cloudStatusPill">Y.O.K.E. AI • Cloud Synced</span>
             </div>
-            <div class="status">Personal AI built by <span id="youName"></span> • for <span class="her"></span></div>
+            <div class="status">Always with you, Chello — <span id="youName"></span>'s Voice &amp; Heart</div>
           </div>
         </div>
 
         <div class="gem-actions">
-          <button id="gamesNavBtn" class="icon-btn game-glow" type="button" title="Play Chibi Doll X-O Game"><span>X-O Game</span></button>
-          <button id="bgmModeBtn" class="icon-btn playing" type="button" title="Switch BGM Vibe"><span id="bgmLabel">Melody</span></button>
+          <button id="gamesNavBtn" class="icon-btn game-glow" type="button" title="Play X-O &amp; Quests"><span>X-O Game</span></button>
+          <button id="bgmModeBtn" class="icon-btn playing" type="button" title="Switch Tamil Song Melody"><span id="bgmLabel">Munbe Vaa</span></button>
           <button id="replayIntroBtn" class="icon-btn" type="button" title="Replay Birthday Intro">Intro</button>
-          <button id="giftNavBtn" class="icon-btn gift-glow" type="button" title="Read Note">Note</button>
+          <button id="giftNavBtn" class="icon-btn gift-glow" type="button" title="Unlock Secret Quest &amp; Note">Note</button>
         </div>
       </header>
 
       <div id="chatScroll" class="gem-scroll">
         <div id="welcomeHero" class="gem-welcome">
-          <h1 class="gem-greet">Hello, <span class="her"></span></h1>
-          <p class="gem-subgreet">Naan dhan <b>Y.O.K.E.</b> — <span class="you-cine"></span> avanoda real voice matrum Tanglish style vechi unakkagave uruvaakkuna personal AI companion. En kitta eppovume natural-ah pesalam, voice-la Tamil-la pesalam, matrum <b>Chibi Doll X-O</b> game vilayadalam.</p>
+          <h1 class="gem-greet">Hey Chello, <span class="her"></span></h1>
+          <p class="gem-subgreet">Eppo en kooda pesanum nu thonudho appo kelu chello — naan eppovume un kooda dhan iruppen.</p>
 
           <div id="chips" class="gem-cards"></div>
         </div>
 
         <div id="chat" class="gem-chat-stream"></div>
 
-        <!-- Personal Letter Section -->
+        <!-- 2-Level Quest & Emotional Romantic Note Section -->
         <section id="gift" class="gem-gift-section">
-          <button id="giftBtn" class="giftbtn" type="button">Read Your Personal Note from <span class="you-cine"></span></button>
+          <button id="giftBtn" class="giftbtn" type="button">Unlock 2-Level Quest: Secret Photo &amp; Personal Note from <span class="you-cine"></span></button>
           <div id="giftContent" class="hidden"></div>
         </section>
       </div>
@@ -224,11 +233,11 @@
       <div class="gem-bottom-dock">
         <div id="quickBar" class="gem-quick-pills"></div>
         <form id="form" class="gem-input-bar">
-          <input id="input" autocomplete="off" placeholder="Message Y.O.K.E. in Tanglish, Tamil or English..." />
+          <input id="input" autocomplete="off" placeholder="pesalamaa cheloo" />
           <button id="micBtn" type="button" class="dock-btn mic" title="Voice Chat" aria-label="Talk to Y.O.K.E.">Mic</button>
           <button type="submit" class="dock-btn send" aria-label="Send">➤</button>
         </form>
-        <div class="ai-fine-print">Y.O.K.E. AI • Crafted by <span class="you-cine"></span> for <span class="her"></span></div>
+        <div class="ai-fine-print">Y.O.K.E  (FOR DHANYA FOREVER DHANYA)</div>
       </div>
     </main>
   </div>

@@ -1,6 +1,6 @@
-// Y.O.K.E. v18 — Full-Wide Natural Ratio Intro + Fast Conversational AI + Voice Chat + Chibi X-O Game + Cloud Sync
+// Y.O.K.E. v20 — Full-Wide Natural Ratio Intro + gemini-3.8-flash AI + Tamil Songs + 2-Level Quest + Inline Sidebar Clear with Date & Time
 const $ = (id) => document.getElementById(id);
-let history = []; // {role: 'user'|'model', parts:[{text}]}
+let history = [];
 let unlocked = false;
 let giftRendered = false;
 
@@ -27,37 +27,41 @@ const panel2Src = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.PANEL
 const panel3Src = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.PANEL_3) || "images/panel3.png");
 const panel4Src = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.PANEL_4) || "images/panel3.png");
 const mePicSrc = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.YOUR_PIC) || "images/avatar.jpg");
+const questImgSrc = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.QUEST_IMAGE) || "images/quest_heart.jpg");
+const questCaption = (typeof CONFIG !== "undefined" && CONFIG.QUEST_CAPTION) ||
+  "Nee en kitta mudila heart shape panni kaata sonna la chello... paruu unakkaga naan senjiten.";
 
 const GEM_CARDS = [
-  { icon: "X-O", title: "Play Chibi Doll X-O", sub: "Dhanya Doll vs Yokesh AI Doll", prompt: "Play X-O Game" },
-  { icon: "MIC", title: "Talk in Yokesh's Voice", sub: "Live voice chat in Tamil & Tanglish", prompt: "__VOICE__" },
-  { icon: "CHAT", title: "I miss you chello", sub: "Chat with Y.O.K.E. in Tanglish", prompt: "Unna romba miss panren chello" },
-  { icon: "NOTE", title: "Personal Note", sub: "Read Yokesh's note for you", prompt: "Surprise" }
+  { icon: "QUEST", title: "2-Level Secret Quest", sub: "Unlock what you asked me to do + My Note", prompt: "__QUEST__" },
+  { icon: "X-O", title: "Play Chibi Doll X-O", sub: "Dhanya Doll vs Yokesh Doll", prompt: "Play X-O Game" },
+  { icon: "VOICE", title: "Talk in Yokesh's Voice", sub: "Live voice call in Tamil & Tanglish", prompt: "__VOICE__" },
+  { icon: "CHAT", title: "Unna romba miss panren", sub: "Talk with me right now, chello", prompt: "Unna romba miss panren chello" }
 ];
 
 const CHIPS = (typeof CONFIG !== "undefined" && CONFIG.CHIPS) || [
-  "Play X-O Game",
+  "Unlock 2-Level Quest",
   "Enna pannura chello?",
   "Unna romba miss panren",
   "Oru cute Tamil kavithai sollu",
-  "Roast me playfully",
-  "Tell me why Yokesh loves me"
+  "Play X-O Game",
+  "Tell me how much you love me"
 ];
-
-const CLIPS = Object.assign(
-  { wish: "audio/test.m4a", tutorial: "audio/test.m4a", miss: "audio/test.m4a" },
-  (typeof CONFIG !== "undefined" && CONFIG.CLIPS) || {}
-);
 
 const TUTORIAL = (typeof CONFIG !== "undefined" && CONFIG.TUTORIAL) || [
-  `Hii chello! Naan dhan Y.O.K.E. — ${you} avanoda real voice matrum Chennai Tanglish style vechi unakkagave uruvaakkuna personal AI companion.`,
-  "En kitta nee eppovume Tamil-la, Tanglish-la, illa English-la enna venalum natural-ah chat pannalam. Mela 'X-O Game' tap panni namma 3D Chibi Dolls vechi vilayadalam, illa Mic tap panni voice-la pesalam."
+  "Hii chello... Eppadi irukka? Naan un pakkathula illadha neram kooda nee en koodave pesura feel irukanum nu dhan idha unakkaga senjen.",
+  "Unaku eppo en kooda pesanum nu thonudho appo vandhu kelu. Mela X-O Game matrum Note-la oru chinna 2-level quest vechiruken — nee enna panna sonna andha cute hair-heart photo-vum ennoda manasula irundhu ezhudhuna note-um adhula irukku, unlock panni paaru chello."
 ];
 
-const LETTER = (typeof CONFIG !== "undefined" && CONFIG.LETTER) ||
-  `My dearest ${her},\n\nHappy Birthday, en chello! I built this entire AI world — Y.O.K.E. — just so you always have a fun, loving digital companion trained on my voice and style whenever you miss me.\n\nChat with it about anything on your mind, play the Chibi Doll X-O game, listen to the music, and remember that wherever life takes us, you're my kind of everything.\n\nAlways & forever yours,\n${you}`;
+const LETTER = (typeof CONFIG !== "undefined" && CONFIG.LETTER) || "";
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function formatDateTimeNow() {
+  const now = new Date();
+  const d = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  const t = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return `${d}, ${t}`;
+}
 
 function safeImg(el, src) {
   if (!el) return;
@@ -96,9 +100,9 @@ function burstHearts(n) {
 }
 
 // =========================================================
-// MULTI-SESSION CHAT HISTORY SIDEBAR + NON-BLOCKING CLOUD SYNC
+// MULTI-SESSION CHAT HISTORY SIDEBAR (WITH DATE, TIME & INLINE CLEAR)
 // =========================================================
-const SESSIONS_KEY = "yoke_sessions_v18";
+const SESSIONS_KEY = "yoke_sessions_v20";
 let sessions = [];
 let activeSessionId = null;
 
@@ -113,7 +117,7 @@ function loadSessionsFromStorage() {
     const first = {
       id: "sess_" + Date.now(),
       title: "Chat Session",
-      updatedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      updatedAt: formatDateTimeNow(),
       messages: []
     };
     sessions = [first];
@@ -127,7 +131,7 @@ function saveSessionsToStorage() {
     const cur = sessions.find((s) => s.id === activeSessionId);
     if (cur) {
       cur.messages = history.slice(-50);
-      cur.updatedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      cur.updatedAt = formatDateTimeNow();
       const firstUser = cur.messages.find((m) => m.role === "user")?.parts?.[0]?.text;
       if (firstUser && (cur.title === "Chat Session" || cur.title === "New Chat")) {
         cur.title = firstUser.slice(0, 28);
@@ -144,10 +148,16 @@ function renderSessionList() {
   box.innerHTML = sessions
     .map(
       (s) => `
-    <button type="button" class="sess-item ${s.id === activeSessionId ? "active" : ""}" data-id="${esc(s.id)}">
-      <div class="sess-title">${esc(s.title)}</div>
-      <div class="sess-meta"><span>${s.messages.length} msgs</span><span>${esc(s.updatedAt || "")}</span></div>
-    </button>`
+    <div class="sess-item ${s.id === activeSessionId ? "active" : ""}" data-id="${esc(s.id)}">
+      <div class="sess-top-row">
+        <div class="sess-title">${esc(s.title)}</div>
+        <button type="button" class="sess-inline-clear" data-clear-id="${esc(s.id)}" title="Clear this chat">Clear</button>
+      </div>
+      <div class="sess-meta">
+        <span>${s.messages.length} msgs</span>
+        <span>${esc(s.updatedAt || formatDateTimeNow())}</span>
+      </div>
+    </div>`
     )
     .join("");
 }
@@ -165,16 +175,42 @@ function switchSession(id) {
   renderSessionList();
 }
 
+function clearOrDeleteSession(id) {
+  if (sessions.length <= 1) {
+    history = [];
+    sessions[0].messages = [];
+    sessions[0].title = "Chat Session";
+    sessions[0].updatedAt = formatDateTimeNow();
+    if ($("chat")) $("chat").innerHTML = "";
+    addMsg(TUTORIAL[0], "bot");
+    history.push({ role: "model", parts: [{ text: TUTORIAL[0] }] });
+    saveSessionsToStorage();
+    return;
+  }
+  sessions = sessions.filter((s) => s.id !== id);
+  if (activeSessionId === id) {
+    activeSessionId = sessions[0].id;
+    switchSession(activeSessionId);
+  }
+  saveSessionsToStorage();
+}
+
 $("sessionList")?.addEventListener("click", (e) => {
-  const btn = e.target.closest(".sess-item");
-  if (btn) switchSession(btn.dataset.id);
+  const clrBtn = e.target.closest(".sess-inline-clear");
+  if (clrBtn) {
+    e.stopPropagation();
+    clearOrDeleteSession(clrBtn.dataset.clearId);
+    return;
+  }
+  const item = e.target.closest(".sess-item");
+  if (item) switchSession(item.dataset.id);
 });
 
 $("newChatBtn")?.addEventListener("click", () => {
   const nw = {
     id: "sess_" + Date.now(),
     title: "New Chat",
-    updatedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    updatedAt: formatDateTimeNow(),
     messages: []
   };
   sessions.unshift(nw);
@@ -184,28 +220,6 @@ $("newChatBtn")?.addEventListener("click", () => {
   saveSessionsToStorage();
 });
 
-$("clearHistoryBtn")?.addEventListener("click", () => {
-  localStorage.removeItem(SESSIONS_KEY);
-  sessions = [];
-  if ($("chat")) $("chat").innerHTML = "";
-  loadSessionsFromStorage();
-  renderSessionList();
-  addMsg(TUTORIAL[0], "bot");
-  history.push({ role: "model", parts: [{ text: TUTORIAL[0] }] });
-  saveSessionsToStorage();
-});
-
-$("clearChatBtn")?.addEventListener("click", () => {
-  if (confirm("Clear messages in current chat?")) {
-    history = [];
-    if ($("chat")) $("chat").innerHTML = "";
-    saveSessionsToStorage();
-    addMsg(TUTORIAL[0], "bot");
-    history.push({ role: "model", parts: [{ text: TUTORIAL[0] }] });
-    saveSessionsToStorage();
-  }
-});
-
 $("toggleSidebarBtn")?.addEventListener("click", () => {
   $("historySidebar")?.classList.toggle("collapsed");
 });
@@ -213,7 +227,6 @@ $("closeSidebarBtn")?.addEventListener("click", () => {
   $("historySidebar")?.classList.add("collapsed");
 });
 
-// Non-blocking background cloud sync so chat is instantaneous
 function syncTurnToGoogleDrive(userMessage, yokeReply) {
   saveSessionsToStorage();
   if (!GDRIVE_CLOUD_URL) return;
@@ -232,11 +245,17 @@ function syncTurnToGoogleDrive(userMessage, yokeReply) {
 }
 
 // =========================================================
-// MULTI-MODE BGM SYNTHESIZER
+// TAMIL ROMANTIC SONGS MELODY ENGINE
 // =========================================================
 let audioCtx = null;
 let bgmMode = 0;
-const BGM_MODES = ["Melody", "MusicBox", "MassBeat", "OFF"];
+const TAMIL_SONGS = (typeof CONFIG !== "undefined" && CONFIG.TAMIL_SONGS) || [
+  { name: "Munbe Vaa", notes: [293.66, 329.63, 349.23, 392.00, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63, 293.66, 349.23] },
+  { name: "Nenjukkul Peidhidum", notes: [329.63, 392.00, 440.00, 493.88, 523.25, 493.88, 440.00, 392.00, 349.23, 392.00, 440.00, 329.63] },
+  { name: "Pirai Thedum", notes: [261.63, 311.13, 349.23, 392.00, 415.30, 392.00, 349.23, 311.13, 293.66, 349.23, 311.13, 261.63] },
+  { name: "Anbil Avan", notes: [349.23, 440.00, 523.25, 587.33, 659.25, 587.33, 523.25, 440.00, 392.00, 440.00, 523.25, 349.23] },
+  { name: "Hosanna", notes: [392.00, 440.00, 493.88, 587.33, 523.25, 493.88, 440.00, 392.00, 329.63, 392.00, 440.00, 392.00] }
+];
 let bgmInterval = null;
 let introBgmTimers = [];
 
@@ -267,24 +286,6 @@ function playCinemaImpact(freq = 65, duration = 1.5) {
   gain.connect(ctx.destination);
   osc.start(now);
   osc.stop(now + duration);
-
-  [freq, freq * 1.5, freq * 2, freq * 2.5].forEach((f) => {
-    const bOsc = ctx.createOscillator();
-    const bFilter = ctx.createBiquadFilter();
-    const bGain = ctx.createGain();
-    bOsc.type = "sawtooth";
-    bOsc.frequency.setValueAtTime(f, now);
-    bFilter.type = "lowpass";
-    bFilter.frequency.setValueAtTime(1200, now);
-    bFilter.frequency.exponentialRampToValueAtTime(200, now + duration);
-    bGain.gain.setValueAtTime(0.11, now);
-    bGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    bOsc.connect(bFilter);
-    bFilter.connect(bGain);
-    bGain.connect(ctx.destination);
-    bOsc.start(now);
-    bOsc.stop(now + duration);
-  });
 }
 
 let introStageMusic = "slam";
@@ -314,8 +315,8 @@ function startIntroMassBGM() {
     osc.type = introStageMusic === "heroine" || introStageMusic === "climax" ? "triangle" : "sawtooth";
     osc.frequency.setValueAtTime(f, now);
     flt.type = "lowpass";
-    flt.frequency.setValueAtTime(introStageMusic === "hero" ? 950 : 1800, now);
-    g.gain.setValueAtTime(0.095, now);
+    flt.frequency.setValueAtTime(1600, now);
+    g.gain.setValueAtTime(0.09, now);
     g.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
     osc.connect(flt);
     flt.connect(g);
@@ -334,64 +335,50 @@ function stopIntroMassBGM() {
 function startChatBGM(modeIndex = 0) {
   if (bgmInterval) clearInterval(bgmInterval);
   bgmInterval = null;
-  bgmMode = modeIndex % BGM_MODES.length;
-  const label = BGM_MODES[bgmMode];
-  if ($("bgmLabel")) $("bgmLabel").textContent = label;
+  const totalModes = TAMIL_SONGS.length + 1;
+  bgmMode = modeIndex % totalModes;
 
-  if (label === "OFF") {
+  if (bgmMode === TAMIL_SONGS.length) {
+    if ($("bgmLabel")) $("bgmLabel").textContent = "Music: OFF";
     $("bgmModeBtn")?.classList.remove("playing");
     return;
   }
+
+  const song = TAMIL_SONGS[bgmMode];
+  if ($("bgmLabel")) $("bgmLabel").textContent = song.name;
 
   const ctx = ensureAudioCtx();
   if (!ctx) return;
   $("bgmModeBtn")?.classList.add("playing");
 
-  const melodies = {
-    Melody: {
-      notes: [349.23, 440.00, 523.25, 659.25, 392.00, 493.88, 587.33, 659.25, 293.66, 349.23, 440.00, 523.25],
-      wave: "sine", speed: 620, vol: 0.045, sustain: 1.7
-    },
-    MusicBox: {
-      notes: [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25, 587.33, 698.46, 880.00, 1174.66, 880.00, 698.46],
-      wave: "triangle", speed: 480, vol: 0.038, sustain: 1.3
-    },
-    MassBeat: {
-      notes: [146.83, 220.00, 293.66, 349.23, 164.81, 246.94, 329.63, 392.00, 130.81, 196.00, 261.63, 329.63],
-      wave: "sawtooth", speed: 440, vol: 0.032, sustain: 0.65
-    }
-  };
-
-  const cfg = melodies[label] || melodies.Melody;
   let idx = 0;
-
   function playStep() {
-    if (BGM_MODES[bgmMode] === "OFF" || !audioCtx) return;
+    if (bgmMode === TAMIL_SONGS.length || !audioCtx) return;
     const now = ctx.currentTime;
-    const freq = cfg.notes[idx % cfg.notes.length];
+    const freq = song.notes[idx % song.notes.length];
     idx++;
 
     const osc = ctx.createOscillator();
     const flt = ctx.createBiquadFilter();
     const gain = ctx.createGain();
-    osc.type = cfg.wave;
+    osc.type = "triangle";
     osc.frequency.setValueAtTime(freq, now);
     flt.type = "lowpass";
-    flt.frequency.setValueAtTime(1400, now);
+    flt.frequency.setValueAtTime(1500, now);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(cfg.vol, now + 0.12);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + cfg.sustain);
+    gain.gain.linearRampToValueAtTime(0.048, now + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.5);
 
     osc.connect(flt);
-    osc.connect(gain);
+    flt.connect(gain);
     gain.connect(ctx.destination);
     osc.start(now);
-    osc.stop(now + cfg.sustain + 0.05);
+    osc.stop(now + 1.55);
   }
 
   playStep();
-  bgmInterval = setInterval(playStep, cfg.speed);
+  bgmInterval = setInterval(playStep, 540);
 }
 
 $("bgmModeBtn")?.addEventListener("click", () => {
@@ -422,7 +409,6 @@ function playSrc(src) {
 
 function pickYokeshMaleVoice(voices, hasTamilScript) {
   if (!voices || !voices.length) return null;
-  // Filter out known female voice names so it NEVER uses a female voice
   const nonFemale = voices.filter((v) => !/female|heera|kalpana|zira|susan|hazel|samantha|victoria|karen|veena|lekha|priya|shruti|meera/i.test(v.name));
   const pool = nonFemale.length > 0 ? nonFemale : voices;
 
@@ -430,14 +416,12 @@ function pickYokeshMaleVoice(voices, hasTamilScript) {
     return (
       pool.find((v) => /ta-IN|tamil/i.test(v.lang + " " + v.name) && /male|valluvar|prabhat|rishi|hemant/i.test(v.name)) ||
       pool.find((v) => /ta-IN|tamil/i.test(v.lang + " " + v.name)) ||
-      pool.find((v) => /en-IN|hi-IN/i.test(v.lang) && /male|prabhat|rishi|hemant/i.test(v.name)) ||
       pool[0]
     );
   }
   return (
     pool.find((v) => /en-IN|ta-IN/i.test(v.lang) && /male|prabhat|rishi|hemant|valluvar|david|mark|daniel/i.test(v.name)) ||
     pool.find((v) => /male|prabhat|rishi|david|mark|daniel|guy/i.test(v.name)) ||
-    pool.find((v) => /en-IN|ta-IN/i.test(v.lang)) ||
     pool[0]
   );
 }
@@ -454,7 +438,6 @@ function browserSpeakYokeshTone(text) {
       const chosen = pickYokeshMaleVoice(voices, hasTamilScript);
       if (chosen) u.voice = chosen;
       u.lang = hasTamilScript ? "ta-IN" : "en-IN";
-      // Tuned to match Yokesh's warm, natural lower-register male pitch and cadence from audio/test.m4a
       u.pitch = 0.84;
       u.rate = 0.96;
       u.onend = u.onerror = () => resolve();
@@ -585,7 +568,7 @@ function clearStageTimeouts() {
 
 function startIntro() {
   unlockAudio();
-  startChatBGM(3);
+  startChatBGM(TAMIL_SONGS.length);
   clearStageTimeouts();
   introDone = false;
   if ($("wish")) $("wish").textContent = "";
@@ -617,7 +600,7 @@ function startIntro() {
     showStage("jnStage3");
   }, 8000));
 
-  // PANEL 4 (12.0s - 17.2s): HAPPY (bang 1) -> BIRTHDAY (bang 2) -> CHELLO (bang 3)
+  // PANEL 4 (12.0s - 17.2s): HAPPY -> BIRTHDAY -> CHELLO
   stageTimeouts.push(setTimeout(() => {
     if (introDone) return;
     introStageMusic = "climax";
@@ -630,13 +613,11 @@ function startIntro() {
     });
     showStage("jnStage4");
 
-    // Bang 1: HAPPY
     triggerFlashAndShake();
     playCinemaImpact(75, 1.2);
     $("p4Bang1")?.classList.remove("hidden-bang");
     $("p4Bang1")?.classList.add("bang-in");
 
-    // Bang 2: BIRTHDAY
     stageTimeouts.push(setTimeout(() => {
       if (introDone) return;
       triggerFlashAndShake();
@@ -645,7 +626,6 @@ function startIntro() {
       $("p4Bang2")?.classList.add("bang-in");
     }, 1050));
 
-    // Bang 3: CHELLO
     stageTimeouts.push(setTimeout(() => {
       if (introDone) return;
       triggerFlashAndShake();
@@ -654,7 +634,6 @@ function startIntro() {
       $("p4Bang3")?.classList.add("bang-in");
     }, 2100));
 
-    // End Intro after Bang 3 settles
     stageTimeouts.push(setTimeout(endIntro, 5000));
   }, 12000));
 }
@@ -714,7 +693,6 @@ function unlock() {
   $("intro")?.classList.remove("hidden");
   initSparks();
 }
-// Expose globally so typing `unlock()` in DevTools console always works
 window.unlock = unlock;
 
 function tick() {
@@ -736,7 +714,7 @@ function tick() {
 }
 
 // =========================================================
-// FAST CONVERSATIONAL AI + CHIBI X-O GAME INTEGRATION
+// FAST CONVERSATIONAL AI + 2-LEVEL QUEST & NOTE INTEGRATION
 // =========================================================
 async function beginChat() {
   burstHearts(14);
@@ -782,6 +760,8 @@ if ($("chips")) {
     if (!card) return;
     if (card.dataset.prompt === "__VOICE__") {
       $("micBtn")?.click();
+    } else if (card.dataset.prompt === "__QUEST__") {
+      window.YOKE_GAMES?.open("quest");
     } else {
       send(card.dataset.prompt);
     }
@@ -795,38 +775,38 @@ if ($("quickBar")) {
   });
 }
 
-// ---------- Personal Note Section ----------
+// ---------- 2-Level Quest Reward & Emotional Romantic Note ----------
 function renderGift() {
   if (giftRendered) return;
   giftRendered = true;
 
-  const vids = ((typeof CONFIG !== "undefined" && CONFIG.VIDEOS) || [])
-    .map((v) => `<a class="card" href="${esc(v.url)}" target="_blank" rel="noopener">
-        <span class="icon">Play</span><span>${esc(v.title)}<small>Tap to watch</small></span></a>`)
-    .join("");
-
-  const songObj = typeof CONFIG !== "undefined" && CONFIG.SONG;
-  const songHtml = songObj && songObj.url && songObj.url !== "#" ? `
-    <div><h3 class="section-title">A Song For You</h3>
-      <a class="card songcard" href="${esc(songObj.url)}" target="_blank" rel="noopener">
-        <span class="icon">Play</span><span>${esc(songObj.title || "Our Song")}<small>Tap to listen</small></span></a></div>` : "";
-
   $("giftContent").innerHTML = `
+    <div class="quest-photo-frame">
+      <img src="${esc(questImgSrc)}" alt="Hair Heart for ${esc(her)}" class="quest-unlocked-img">
+      <p class="quest-photo-cap">${esc(questCaption)}</p>
+    </div>
     <div class="letter">${esc(LETTER).replace(/\n/g, "<br>")}</div>
-    ${songHtml}
-    ${vids ? `<div><h3 class="section-title">Special Videos</h3><div class="list">${vids}</div></div>` : ""}`;
+  `;
 }
 
-function openGift() {
+window.unlockPersonalQuestReward = function () {
   renderGift();
   $("giftBtn")?.classList.add("hidden");
   $("giftContent")?.classList.remove("hidden");
-  burstHearts(16);
+  burstHearts(18);
   window.YOKE_FX?.confetti();
-  setTimeout(() => $("gift")?.scrollIntoView({ behavior: "smooth" }), 150);
+  setTimeout(() => $("gift")?.scrollIntoView({ behavior: "smooth" }), 200);
+};
+
+function openNoteOrQuest() {
+  if (window.YOKE_GAMES?.isQuestUnlocked && window.YOKE_GAMES.isQuestUnlocked()) {
+    window.unlockPersonalQuestReward();
+  } else {
+    window.YOKE_GAMES?.open("quest");
+  }
 }
-$("giftBtn")?.addEventListener("click", openGift);
-$("giftNavBtn")?.addEventListener("click", openGift);
+$("giftBtn")?.addEventListener("click", openNoteOrQuest);
+$("giftNavBtn")?.addEventListener("click", openNoteOrQuest);
 
 // ---------- Chat Stream ----------
 function scrollToBottom() {
@@ -891,16 +871,42 @@ function addTyping() {
 function getYokeshSystemPrompt() {
   const customBase = typeof buildSystemPrompt === "function" ? buildSystemPrompt() : "";
   return `${customBase}
-You are Y.O.K.E. (You're Our Kind of Everything), a smart, conversational, deeply affectionate personal AI companion created by ${you} for his girlfriend ${her} (whom he calls "chello" / "chellam").
+You are speaking directly as ${you}'s living digital heart and voice to his girlfriend ${her} ("chello").
 CRITICAL CONVERSATION RULES:
-1. Chat naturally, intelligently, and directly about WHATEVER she asks or says, while speaking in ${you}'s warm, playful Chennai Tanglish / Tamil / English style (using pet names like "chello", "chellam", "thangam", "kuttyma", "da", "ma").
-2. Do NOT use unnecessary emojis. Express warmth through your words.
-3. Never mention "Gemini" anywhere. You are Y.O.K.E. AI, built by ${you} for ${her}.`;
+1. Speak like a real human boyfriend (${you}), never like a bot.
+2. Chat naturally, intelligently, and directly about WHATEVER she asks or says in Chennai Tanglish / Tamil / English (using pet names like "chello", "chellam", "thangam", "kuttyma").
+3. Do NOT use unnecessary emojis.`;
 }
 
+// Prioritizes gemini-3.8-flash first + automatic ListModels discovery!
 async function callDirectYokeFallback(userText, systemPrompt, recentHistory) {
   if (!DIRECT_API_KEY) return null;
-  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+  const models = [
+    "gemini-3.8-flash",
+    "gemini-3.8-flash-preview",
+    "gemini-flash-latest",
+    "gemini-3.1-flash-lite-preview",
+    "gemini-3-flash-preview",
+    "gemini-2.5-flash"
+  ];
+  try {
+    const lr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(DIRECT_API_KEY)}`);
+    if (lr.ok) {
+      const ld = await lr.json();
+      (ld.models || []).forEach((m) => {
+        const name = String(m.name || "").replace(/^models\//, "");
+        if (
+          m.supportedGenerationMethods?.includes("generateContent") &&
+          /gemini/i.test(name) &&
+          !/tts|image|embedding|vision|aqa|veo|imagen/i.test(name) &&
+          !models.includes(name)
+        ) {
+          models.push(name);
+        }
+      });
+    }
+  } catch (e) {}
+
   for (const m of models) {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(DIRECT_API_KEY)}`, {
@@ -914,7 +920,11 @@ async function callDirectYokeFallback(userText, systemPrompt, recentHistory) {
       });
       if (r.ok) {
         const d = await r.json();
-        const text = (d.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
+        const text = (d.candidates?.[0]?.content?.parts || [])
+          .filter((p) => !p.thought)
+          .map((p) => p.text || "")
+          .join("")
+          .trim();
         if (text) return text;
       }
     } catch (e) {}
@@ -930,7 +940,6 @@ async function askYokeAI(userText, byVoice) {
       ? "\n\nShe is speaking to you in Live Voice Mode. Reply in 1 to 2 natural spoken Tamil/Tanglish sentences with zero emojis so it sounds just like Yokesh talking on a call."
       : "");
 
-  // Keep payload compact (last 10 turns) so Vercel responds in < 1 second
   const compactHistory = history.slice(-10);
 
   try {
@@ -959,7 +968,7 @@ async function askYokeAI(userText, byVoice) {
     }
 
     const errReason = data.message || data.error || `HTTP ${res.status}`;
-    const diagMsg = `[Y.O.K.E. API Setup Needed]: ${errReason}. Check your API key in Vercel Environment Variables and redeploy.`;
+    const diagMsg = `[Y.O.K.E. API Setup Needed]: ${errReason}.`;
     history.push({ role: "model", parts: [{ text: diagMsg }] });
     saveSessionsToStorage();
     return diagMsg;
@@ -982,14 +991,17 @@ async function send(text) {
   if (busy || !text) return;
 
   if (/^play x-o|chibi doll x-o/i.test(text.trim())) {
-    window.YOKE_GAMES?.open();
+    window.YOKE_GAMES?.open("xo");
+    return;
+  }
+  if (/^unlock 2-level quest|surprise/i.test(text.trim())) {
+    openNoteOrQuest();
     return;
   }
 
   busy = true;
   unlockAudio();
   addMsg(text, "me");
-  if (/^surprise/i.test(text.trim())) openGift();
 
   const typingRow = addTyping();
   try {
@@ -1016,7 +1028,7 @@ $("micBtn")?.addEventListener("click", () => {
   unlockAudio();
   $("voice").classList.add("on");
   setOrb("", idleLabel());
-  $("vtext").textContent = "Speak in Tamil, Tanglish, or English (e.g., 'Enna panriga?', 'I miss you')";
+  $("vtext").textContent = "pesalamaa cheloo...";
 });
 
 $("playRealVoiceBtn")?.addEventListener("click", async () => {
@@ -1068,7 +1080,7 @@ $("orb")?.addEventListener("click", async () => {
   rec.onend = async () => {
     if (!heard) return setOrb("", idleLabel());
     vBusy = true;
-    setOrb("thinking", "Y.O.K.E. is thinking...");
+    setOrb("thinking", "Thinking...");
     addMsg(heard, "me");
     try {
       const reply = await askYokeAI(heard, true);

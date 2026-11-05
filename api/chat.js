@@ -1,5 +1,38 @@
-// Vercel Serverless Function: Y.O.K.E. Fast Conversational AI Engine (v18)
-// Optimized for sub-second response latency & non-blocking Google Drive Cloud Sync!
+// Vercel Serverless Function: Y.O.K.E. Conversational Engine (v19)
+// Prioritizes models/gemini-3.8-flash + Auto Model Discovery for instant responses!
+
+async function discoverAvailableModels(key) {
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    const models = (data.models || [])
+      .filter((m) =>
+        Array.isArray(m.supportedGenerationMethods) &&
+        m.supportedGenerationMethods.includes("generateContent") &&
+        /gemini/i.test(m.name || "") &&
+        !/tts|image|embedding|vision|aqa|veo|imagen|robotics|computer-use/i.test(m.name || "")
+      )
+      .map((m) => String(m.name).replace(/^models\//, ""));
+
+    models.sort((a, b) => {
+      const score = (name) => {
+        if (name === "gemini-3.8-flash") return 120;
+        if (name.includes("3.8-flash")) return 115;
+        if (name.includes("3.1-flash") || name.includes("3-flash")) return 110;
+        if (name === "gemini-flash-latest") return 105;
+        if (name === "gemini-2.5-flash") return 95;
+        if (name.includes("flash")) return 85;
+        if (name.includes("3.8") || name.includes("3.1") || name.includes("3")) return 75;
+        return 10;
+      };
+      return score(b) - score(a);
+    });
+    return models;
+  } catch (e) {
+    return [];
+  }
+}
 
 async function callModel(key, model, payload) {
   const cleanModel = String(model).replace(/^models\//, "").trim();
@@ -46,70 +79,67 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "history is empty" });
     }
 
-    // Keep last 10 turns for ultra-fast latency
     const recent = history.slice(-10).map((m) => ({
       role: m.role === "model" ? "model" : "user",
       parts: [{ text: String((m.parts && m.parts[0] && m.parts[0].text) || "").slice(0, 1200) }]
     }));
 
     const systemPrompt = String(body.systemPrompt || "").slice(0, 6000) +
-      "\nVoice & Persona Reference: Speak in Yokesh's exact natural Chennai Tanglish / Tamil voice ('Hii chello...'). Never mention Gemini. Do not use unnecessary emojis.";
+      "\nVoice & Persona Reference: Speak like Yokesh himself talking naturally in Chennai Tanglish / Tamil ('Hii chello...'). Sound warm, human, and affectionate, never like a bot. Do not use unnecessary emojis.";
 
     const envModel = (process.env.GEMINI_MODEL || "").trim();
-    const validEnvModel = envModel && !/1\.5/i.test(envModel) ? envModel : null;
+    const validEnvModel = envModel && !/1\.5|2\.5/i.test(envModel) ? envModel : null;
 
-    // Prioritize fastest flash models first
-    const candidates = [
+    // Prioritize gemini-3.8-flash first as required for new users!
+    const baseCandidates = [
       validEnvModel,
-      "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
-      "gemini-2.0-flash"
+      "gemini-3.8-flash",
+      "gemini-3.8-flash-preview",
+      "gemini-flash-latest",
+      "gemini-3.1-flash-lite-preview",
+      "gemini-3-flash-preview",
+      "gemini-2.5-flash"
     ].filter(Boolean);
 
     let reply = "";
     let primaryError = null;
 
-    for (const model of candidates) {
-      const attempt = await callModel(key, model, {
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: recent,
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 320,
-          thinkingConfig: model.includes("2.5") ? { thinkingBudget: 0 } : undefined
-        }
-      });
+    async function tryModelList(modelsToTry) {
+      for (const model of modelsToTry) {
+        const attempt = await callModel(key, model, {
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: recent,
+          generationConfig: {
+            temperature: 0.85,
+            maxOutputTokens: 350
+          }
+        });
 
-      if (attempt.ok) {
-        const text = (attempt.data.candidates?.[0]?.content?.parts || [])
-          .filter((p) => !p.thought)
-          .map((p) => p.text || "")
-          .join("")
-          .trim();
-        if (text) {
-          reply = text;
-          break;
-        }
-      } else {
-        // Retry once without thinkingConfig if the model doesn't support thinkingConfig
-        if (attempt.status === 400 && model.includes("2.5")) {
-          const retry = await callModel(key, model, {
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: recent,
-            generationConfig: { temperature: 0.8, maxOutputTokens: 320 }
-          });
-          if (retry.ok) {
-            const text = (retry.data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
-            if (text) {
-              reply = text;
-              break;
-            }
+        if (attempt.ok) {
+          const text = (attempt.data.candidates?.[0]?.content?.parts || [])
+            .filter((p) => !p.thought)
+            .map((p) => p.text || "")
+            .join("")
+            .trim();
+          if (text) return text;
+        } else {
+          const errMsg = attempt.data?.error?.message || `HTTP ${attempt.status}`;
+          if (attempt.status !== 404 && !/no longer available/i.test(errMsg)) {
+            if (!primaryError) primaryError = `[${model}]: ${errMsg}`;
           }
         }
-        const errMsg = attempt.data?.error?.message || `HTTP ${attempt.status}`;
-        if (attempt.status !== 404 || !primaryError) {
-          primaryError = `[${model}]: ${errMsg}`;
-        }
+      }
+      return "";
+    }
+
+    reply = await tryModelList(baseCandidates);
+
+    // Dynamic fallback: query ListModels on the user's API key if static list didn't match
+    if (!reply) {
+      const discovered = await discoverAvailableModels(key);
+      const unseen = discovered.filter((m) => !baseCandidates.includes(m));
+      if (unseen.length > 0) {
+        reply = await tryModelList(unseen.slice(0, 6));
       }
     }
 
@@ -120,7 +150,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Fire-and-forget non-blocking Google Drive sync
+    // Non-blocking Google Drive Cloud Sync
     const gdriveUrl = process.env.GDRIVE_WEBHOOK_URL || body.gdriveWebhookUrl || "https://script.google.com/macros/s/AKfycbwhas2_Is88Od53Q9PEFY-wfhLq5adI5VgVvssb1ASlYboZIx9yynyB-uXTu8-iyItGkQ/exec";
     if (gdriveUrl && gdriveUrl.startsWith("https://script.google.com/")) {
       const lastUserMsg = recent[recent.length - 1]?.parts?.[0]?.text || "";

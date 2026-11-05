@@ -1401,3 +1401,73 @@ body.unlocked {
   75%  { transform: translate3d(-6px, 4px, 0) rotate(-0.5deg) scale(1.01); }
   100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
 }
+
+
+/* =========================================================
+   v20 INLINE SIDEBAR CLEAR WITH DATE/TIME & 2-LEVEL QUEST REWARD
+   ========================================================= */
+.avatar, .side-avatar, .msg-avatar {
+  object-fit: cover;
+  object-position: center 28%;
+}
+.sess-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.sess-inline-clear {
+  background: rgba(255, 77, 136, 0.18);
+  border: 1px solid rgba(255, 209, 102, 0.45);
+  color: #ffd166;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sess-inline-clear:hover {
+  background: rgba(233, 30, 99, 0.55);
+  color: #fff;
+}
+.quest-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.quest-unlock-title {
+  font-family: "Cinzel Decorative", serif;
+  color: var(--gold);
+  font-size: 1.25rem;
+  margin: 8px 0;
+}
+.quest-photo-frame {
+  background: #1a0715;
+  border: 2px solid var(--gold);
+  border-radius: 18px;
+  padding: 12px;
+  margin: 10px auto 16px;
+  max-width: 520px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.65);
+}
+.quest-unlocked-img {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+.quest-photo-cap {
+  margin: 10px 0 2px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #ffe082;
+}
+.quest-letter-box {
+  max-height: 240px;
+  overflow-y: auto;
+  font-size: 1.15rem;
+}
