@@ -17,7 +17,7 @@ const CONFIG = {
   // GOOGLE DRIVE CLOUD STORAGE (For saving all chats & loading Drive media)
   // Paste your Google Apps Script Web App URL (https://script.google.com/macros/s/.../exec)
   // ==========================================================================
-  GDRIVE_CLOUD_URL: "https://script.google.com/macros/s/AKfycbwhas2_Is88Od53Q9PEFY-wfhLq5adI5VgVvssb1ASlYboZIx9yynyB-uXTu8-iyItGkQ/exec",
+  GDRIVE_CLOUD_URL: "",
 
   // Your 3 Widescreen Full-Screen Jana Nayagan Intro Panels (No Chapter Headers!)
   PANEL_1: "images/panel1.png", // Panel 1: Yokesh arms wide open with falling petals

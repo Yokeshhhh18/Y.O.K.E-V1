@@ -13,7 +13,7 @@
   <canvas id="fx"></canvas>
 
   <!-- =========================================================
-       JANA NAYAGAN STYLE 4-PANEL FULL-SCREEN ENGLISH INTRO (v14)
+       70MM KOLS/JANA NAYAGAN 4-PANEL INTRO (v15 - VISIBLE PIC & TEXT BELOW)
        ========================================================= -->
   <section id="intro" class="hidden">
     <canvas id="sparks"></canvas>
@@ -23,9 +23,9 @@
     <div class="flash-overlay" id="flashOverlay"></div>
     <button id="skip" type="button">SKIP INTRO ⏭</button>
 
-    <!-- Gate: Tap for First Day First Show -->
+    <!-- Gate -->
     <div id="gate" class="jn-stage active">
-      <div class="jn-cert">U/A • 70MM WORLDWIDE ROMANTIC BLOCKBUSTER</div>
+      <div class="jn-cert">U/A • 70MM ROMANTIC BLOCKBUSTER</div>
       <div class="jn-monogram-big">Y</div>
       <h2 class="jn-gate-title">Y.O.K.E.</h2>
       <p class="jn-gate-sub">You're Our Kind of Everything</p>
@@ -34,52 +34,47 @@
     </div>
 
     <!-- PANEL 1: HAPPY -->
-    <div id="jnStage1" class="jn-stage jn-fullscreen-card">
-      <div class="jn-bg-watermark">Y.O.K.E</div>
-      <div class="jn-hero-cutout">
+    <div id="jnStage1" class="jn-stage jn-panel-card">
+      <div class="jn-img-wrap">
         <img id="panel1Pic" src="images/panel1.png" alt="Yokesh">
-        <div class="jn-cutout-fade"></div>
       </div>
-      <div class="jn-title-block center-block">
-        <h1 class="jn-massive-slam gold-glow" id="slamWord1">HAPPY</h1>
+      <div class="jn-text-below">
+        <h1 class="jn-slam-text">HAPPY</h1>
       </div>
     </div>
 
     <!-- PANEL 2: BIRTHDAY -->
-    <div id="jnStage2" class="jn-stage jn-fullscreen-card">
-      <div class="jn-bg-watermark">QUEEN</div>
-      <div class="jn-hero-cutout">
+    <div id="jnStage2" class="jn-stage jn-panel-card">
+      <div class="jn-img-wrap">
         <img id="panel2Pic" src="images/panel2.png" alt="Dhanya">
-        <div class="jn-cutout-fade"></div>
       </div>
-      <div class="jn-title-block center-block">
-        <h1 class="jn-massive-slam gold-glow" id="slamWord2">BIRTHDAY</h1>
+      <div class="jn-text-below">
+        <h1 class="jn-slam-text">BIRTHDAY</h1>
       </div>
     </div>
 
     <!-- PANEL 3: DHANYA -->
-    <div id="jnStage3" class="jn-stage jn-fullscreen-card">
-      <div class="jn-bg-watermark">FOREVER</div>
-      <div class="jn-hero-cutout">
+    <div id="jnStage3" class="jn-stage jn-panel-card">
+      <div class="jn-img-wrap">
         <img id="panel3Pic" src="images/panel3.png" alt="Us Together">
-        <div class="jn-cutout-fade"></div>
       </div>
-      <div class="jn-title-block center-block">
-        <h1 class="jn-massive-slam gold-glow" id="slamWord3">DHANYA</h1>
+      <div class="jn-text-below">
+        <h1 class="jn-slam-text">DHANYA</h1>
       </div>
     </div>
 
-    <!-- PANEL 4: HAPPY BIRTHDAY DHANYA (Blurred Background Panel + Typewriter Wish) -->
-    <div id="jnStage4" class="jn-stage jn-fullscreen-card">
-      <div class="jn-bg-watermark">Y.O.K.E</div>
-      <div class="jn-hero-cutout">
-        <img id="panel4Pic" src="images/panel4_blur.png" alt="Climax Blur">
-        <div class="jn-cutout-fade climax-fade"></div>
+    <!-- PANEL 4: HAPPY (bang 1) BIRTHDAY (bang 2) DHANYA (bang 3) -->
+    <div id="jnStage4" class="jn-stage jn-panel-card">
+      <div class="jn-img-wrap">
+        <img id="panel4Pic" src="images/panel4_blur.png" alt="Climax">
       </div>
-      <div class="jn-title-block center-block">
-        <h1 class="jn-massive-slam gold-glow climax-slam">HAPPY BIRTHDAY DHANYA</h1>
-        <div id="wish" aria-live="polite"></div>
-        <div class="jn-release-tag">✨ RUNNING SUCCESSFULLY IN OUR HEARTS FOREVER ✨</div>
+      <div class="jn-text-below">
+        <div class="jn-bang-row">
+          <span id="p4Bang1" class="jn-slam-text climax-slam hidden-bang">HAPPY</span>
+          <span id="p4Bang2" class="jn-slam-text climax-slam hidden-bang">BIRTHDAY</span>
+          <span id="p4Bang3" class="jn-slam-text climax-slam hidden-bang">DHANYA</span>
+        </div>
+        <div id="wish" class="hidden" aria-live="polite"></div>
       </div>
     </div>
   </section>
@@ -88,7 +83,7 @@
        Y.O.K.E. LIVE TAMIL / TANGLISH AI VOICE MODE
        ========================================================= -->
   <section id="voice">
-    <div class="voice-top-badge">🤖 Y.O.K.E. LIVE TAMIL VOICE • Matched to <span class="you-cine"></span>'s Voice</div>
+    <div class="voice-top-badge">🤖 Y.O.K.E. LIVE VOICE • Matched to <span class="you-cine"></span>'s Voice</div>
     <div class="orb-stage">
       <span class="halo h1"></span>
       <span class="halo h2"></span>
@@ -103,14 +98,14 @@
     <div id="vstate">Tap the orb &amp; speak in Tamil / Tanglish 🎙</div>
     <div id="vtext"></div>
     <div class="vrow">
-      <button id="playRealVoiceBtn" type="button">🎧 Hear Yokesh's Original Voice</button>
+      <button id="playRealVoiceBtn" type="button">🎧 Hear Yokesh's Voice</button>
       <button id="langBtn" type="button">🌐 தமிழ் (ta-IN)</button>
       <button id="vclose" type="button">✕ Back to Chat</button>
     </div>
   </section>
 
   <!-- =========================================================
-       LOCK SCREEN (NO PHOTO — ANIMATED ENVELOPE & 4 FLIP TILES)
+       LOCK SCREEN
        ========================================================= -->
   <section id="lock" class="screen">
     <div class="lock-aurora"></div>
@@ -128,7 +123,7 @@
   </section>
 
   <!-- =========================================================
-       3D CHIBI DOLL X-O GAME MODAL (YES/NO GAME REMOVED)
+       3D CHIBI DOLL X-O GAME MODAL
        ========================================================= -->
   <section id="gamesModal" class="games-overlay hidden">
     <div class="games-panel">
@@ -156,7 +151,7 @@
   </section>
 
   <!-- =========================================================
-       Y.O.K.E. MAIN AI INTERFACE (NO POLAROID PHOTOS ON PAGE!)
+       Y.O.K.E. MAIN AI INTERFACE (EDGE-TO-EDGE FULL WIDTH)
        ========================================================= -->
   <div id="appLayout" class="app-layout hidden">
     <aside id="historySidebar" class="history-sidebar">
@@ -173,7 +168,10 @@
       <button id="newChatBtn" type="button" class="new-chat-btn">＋ New Birthday Chat</button>
       <div class="side-label">SAVED CONVERSATIONS</div>
       <div id="sessionList" class="session-list"></div>
-      <button id="clearHistoryBtn" type="button" class="clear-hist-btn">🗑 Clear Local History</button>
+      <div class="sidebar-bottom-actions">
+        <button id="clearChatBtn" type="button" class="clear-hist-btn" title="Delete current chat messages">🗑 Clear Current Chat</button>
+        <button id="clearHistoryBtn" type="button" class="clear-hist-btn" title="Delete all history">🗑 Clear All Sessions</button>
+      </div>
     </aside>
 
     <main id="app" class="main-chat-col">
@@ -202,7 +200,7 @@
         <div class="gem-actions">
           <button id="gamesNavBtn" class="icon-btn game-glow" type="button" title="Play Chibi Doll X-O Game">👑 <span>X-O Game</span></button>
           <button id="bgmModeBtn" class="icon-btn playing" type="button" title="Switch BGM Vibe">🎵 <span id="bgmLabel">Melody</span></button>
-          <button id="replayIntroBtn" class="icon-btn" type="button" title="Replay 4-Panel Intro">🎬</button>
+          <button id="replayIntroBtn" class="icon-btn" type="button" title="Replay Intro">🎬</button>
           <button id="giftNavBtn" class="icon-btn gift-glow" type="button" title="Read Birthday Letter">💌</button>
         </div>
       </header>
@@ -218,7 +216,7 @@
 
         <div id="chat" class="gem-chat-stream"></div>
 
-        <!-- Clean Birthday Letter Section (All 6 Polaroid Photos Removed!) -->
+        <!-- Clean Birthday Letter Section -->
         <section id="gift" class="gem-gift-section">
           <button id="giftBtn" class="giftbtn" type="button">💌 Tap to read your Birthday Letter from <span class="you-cine"></span></button>
           <div id="giftContent" class="hidden"></div>

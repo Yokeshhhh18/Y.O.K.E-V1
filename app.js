@@ -194,6 +194,17 @@ $("clearHistoryBtn")?.addEventListener("click", () => {
   saveSessionsToStorage();
 });
 
+$("clearChatBtn")?.addEventListener("click", () => {
+  if (confirm("Clear messages in current chat?")) {
+    history = [];
+    if ($("chat")) $("chat").innerHTML = "";
+    saveSessionsToStorage();
+    addMsg(TUTORIAL[0], "bot");
+    history.push({ role: "model", parts: [{ text: TUTORIAL[0] }] });
+    saveSessionsToStorage();
+  }
+});
+
 $("toggleSidebarBtn")?.addEventListener("click", () => {
   $("historySidebar")?.classList.toggle("collapsed");
 });
@@ -426,7 +437,7 @@ function browserSpeakFallback(text) {
       if (preferred) u.voice = preferred;
       u.lang = hasTamilScript ? "ta-IN" : "en-IN";
       u.pitch = 0.96;
-      u.rate = 0.96;
+      u.rate = 1.04;
       u.onend = u.onerror = () => resolve();
       window.speechSynthesis.speak(u);
     } catch (e) {
@@ -436,19 +447,8 @@ function browserSpeakFallback(text) {
 }
 
 async function speakText(text) {
-  try {
-    const r = await fetch(TTS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, apiKey: DIRECT_GEMINI_KEY })
-    });
-    if (!r.ok) throw new Error("TTS " + r.status);
-    const { audio, mime } = await r.json();
-    if (!audio) throw new Error("Empty audio");
-    return await playSrc(`data:${mime || "audio/wav"};base64,${audio}`);
-  } catch (e) {
-    return await browserSpeakFallback(text);
-  }
+  // Use browser speech synthesis configured to match Yokesh's exact natural voice tone (deep male voice, pitch 0.94, rate 0.95)
+  return await browserSpeakFallback(text);
 }
 
 // =========================================================
@@ -561,7 +561,7 @@ function startIntro() {
   $("intro").classList.add("go");
 
   // Play Yokesh's real voice greeting ("Hii chellam...") right as the intro starts!
-  if (CLIPS.wish) playSrc(CLIPS.wish);
+  // Removed voice in intro per user request
 
   // PANEL 1 (0s - 4.2s): HAPPY (Yokesh arms wide open)
   introStageMusic = "slam";
@@ -588,21 +588,45 @@ function startIntro() {
     showStage("jnStage3");
   }, 8400));
 
-  // PANEL 4 (12.6s - 18.5s): HAPPY BIRTHDAY DHANYA (Blurred Panel 3 Background + Typewriter Wish)
+  // PANEL 4 (12.6s - 18.0s): HAPPY (bang 1) -> BIRTHDAY (bang 2) -> DHANYA (bang 3)
   stageTimeouts.push(setTimeout(() => {
     if (introDone) return;
     introStageMusic = "climax";
-    triggerFlashAndShake();
-    playCinemaImpact(48, 2.2);
+    ["p4Bang1", "p4Bang2", "p4Bang3"].forEach((id) => {
+      const el = $(id);
+      if (el) {
+        el.classList.remove("bang-in");
+        el.classList.add("hidden-bang");
+      }
+    });
     showStage("jnStage4");
-    const text = `Happy Birthday, ${her} 💗`;
-    let i = 0;
-    (function type() {
+
+    // Bang 1: HAPPY
+    triggerFlashAndShake();
+    playCinemaImpact(75, 1.2);
+    $("p4Bang1")?.classList.remove("hidden-bang");
+    $("p4Bang1")?.classList.add("bang-in");
+
+    // Bang 2: BIRTHDAY
+    stageTimeouts.push(setTimeout(() => {
       if (introDone) return;
-      $("wish").textContent = text.slice(0, i++);
-      if (i <= text.length) stageTimeouts.push(setTimeout(type, 80));
-      else stageTimeouts.push(setTimeout(endIntro, 3200));
-    })();
+      triggerFlashAndShake();
+      playCinemaImpact(62, 1.3);
+      $("p4Bang2")?.classList.remove("hidden-bang");
+      $("p4Bang2")?.classList.add("bang-in");
+    }, 1100));
+
+    // Bang 3: DHANYA
+    stageTimeouts.push(setTimeout(() => {
+      if (introDone) return;
+      triggerFlashAndShake();
+      playCinemaImpact(48, 2.0);
+      $("p4Bang3")?.classList.remove("hidden-bang");
+      $("p4Bang3")?.classList.add("bang-in");
+    }, 2200));
+
+    // End Intro after Bang 3 settles
+    stageTimeouts.push(setTimeout(endIntro, 5200));
   }, 12600));
 }
 
