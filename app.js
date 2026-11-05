@@ -1,4 +1,4 @@
-// Y.O.K.E. v10 — Full-Screen English Jana Nayagan Intro + Real Gemini Conversational AI + Tamil Voice Chat + Chibi X-O Game + Chat History Sidebar
+// Y.O.K.E. v10 — Full-Screen English Jana Nayagan Intro + Real Y.O.K.E. Conversational AI + Tamil Voice Chat + Chibi X-O Game + Chat History Sidebar
 const $ = (id) => document.getElementById(id);
 let history = []; // {role: 'user'|'model', parts:[{text}]}
 let unlocked = false;
@@ -50,8 +50,8 @@ const CLIPS = Object.assign(
 );
 
 const TUTORIAL = (typeof CONFIG !== "undefined" && CONFIG.TUTORIAL) || [
-  `Hii chellam! Happy Birthday ${her} 💗! Naan dhan Y.O.K.E., oru AI 🤖 — ${you} avanoda real voice matrum Chennai Tanglish style vechi unakkagave உருவாக்குன personal Gemini AI companion 🥰`,
-  "En kitta nee Gemini-la pesura maadhiriye தமிழ்ல, Tanglish-la, illa English-la enna venalum natural-ah chat pannalam 💬! Mela 👑 'X-O Game' tap panni namma 3D Chibi Dolls vechi X-O vilayadalam, illa 🎙 Mic tap panni தமிழ்ல voice-la pesalam ✨"
+  `Hii chellam! Happy Birthday ${her} 💗! Naan dhan Y.O.K.E., oru AI 🤖 — ${you} avanoda real voice matrum Chennai Tanglish style vechi unakkagave உருவாக்குன personal Y.O.K.E. AI companion 🥰`,
+  "En kitta nee Y.O.K.E.-la pesura maadhiriye தமிழ்ல, Tanglish-la, illa English-la enna venalum natural-ah chat pannalam 💬! Mela 👑 'X-O Game' tap panni namma 3D Chibi Dolls vechi X-O vilayadalam, illa 🎙 Mic tap panni தமிழ்ல voice-la pesalam ✨"
 ];
 
 const LETTER = (typeof CONFIG !== "undefined" && CONFIG.LETTER) ||
@@ -111,7 +111,7 @@ function loadSessionsFromStorage() {
   if (!Array.isArray(sessions) || sessions.length === 0) {
     const first = {
       id: "sess_" + Date.now(),
-      title: "First Birthday Chat 💗",
+      title: "Chat Session",
       updatedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       messages: []
     };
@@ -172,7 +172,7 @@ $("sessionList")?.addEventListener("click", (e) => {
 $("newChatBtn")?.addEventListener("click", () => {
   const nw = {
     id: "sess_" + Date.now(),
-    title: "New Birthday Chat 💗",
+    title: "New Chat",
     updatedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     messages: []
   };
@@ -861,13 +861,13 @@ function getYokeshSystemPrompt() {
   return `${customBase}
 You are Y.O.K.E. (You're Our Kind of Everything), a smart, conversational, deeply affectionate AI companion created by ${you} as a birthday gift for his girlfriend ${her}.
 CRITICAL CONVERSATION RULES:
-1. Chat naturally, intelligently, and directly about WHATEVER she asks or says—just like Gemini—while speaking in ${you}'s warm, playful Chennai Tanglish / Tamil / English style (using pet names like "chellam", "thangam", "kuttyma", "da", "ma").
+1. Chat naturally, intelligently, and directly about WHATEVER she asks or says—just like Y.O.K.E.—while speaking in ${you}'s warm, playful Chennai Tanglish / Tamil / English style (using pet names like "chellam", "thangam", "kuttyma", "da", "ma").
 2. NEVER give repetitive or generic template replies. Directly answer her exact question ("enna panriga", jokes, stories, advice, Tamil songs, teasing, life questions, or casual banter) with wit, warmth, and real conversational depth!
 3. Always remember you are Y.O.K.E. AI 🤖 built with love by ${you} for ${her}.`;
 }
 
-// Direct client-side Gemini fallback with automatic ListModels discovery (Active 2026 models, retired 1.5-flash removed!)
-async function callDirectGeminiFallback(userText, systemPrompt, recentHistory) {
+// Direct client-side Y.O.K.E. fallback with automatic ListModels discovery (Active 2026 models, retired 1.5-flash removed!)
+async function callDirectY.O.K.E.Fallback(userText, systemPrompt, recentHistory) {
   if (!DIRECT_GEMINI_KEY) return null;
   const models = [
     "gemini-2.5-flash",
@@ -941,22 +941,22 @@ async function askYokeAI(userText, byVoice) {
       return data.reply;
     }
 
-    // Try direct Gemini call if API key is in config.js
-    const directReply = await callDirectGeminiFallback(userText, sysPrompt, history.slice(-16));
+    // Try direct Y.O.K.E. call if API key is in config.js
+    const directReply = await callDirectY.O.K.E.Fallback(userText, sysPrompt, history.slice(-16));
     if (directReply) {
       history.push({ role: "model", parts: [{ text: directReply }] });
       syncTurnToGoogleDrive(userText, directReply);
       return directReply;
     }
 
-    // Show exact diagnostic reason so Yokesh knows why Gemini didn't respond!
+    // Show exact diagnostic reason so Yokesh knows why Y.O.K.E. didn't respond!
     const errReason = data.message || data.error || `HTTP ${res.status}`;
-    const diagMsg = `⚠️ [Gemini API Setup Needed]: ${errReason}. (To fix: In Vercel -> Settings -> Environment Variables, add GEMINI_API_KEY with your key from aistudio.google.com/apikey and click Redeploy — or paste it inside config.js!)`;
+    const diagMsg = `⚠️ [Y.O.K.E. API Setup Needed]: ${errReason}. (To fix: In Vercel -> Settings -> Environment Variables, add GEMINI_API_KEY with your key from aistudio.google.com/apikey and click Redeploy — or paste it inside config.js!)`;
     history.push({ role: "model", parts: [{ text: diagMsg }] });
     saveSessionsToStorage();
     return diagMsg;
   } catch (err) {
-    const directReply = await callDirectGeminiFallback(userText, sysPrompt, history.slice(-16));
+    const directReply = await callDirectY.O.K.E.Fallback(userText, sysPrompt, history.slice(-16));
     if (directReply) {
       history.push({ role: "model", parts: [{ text: directReply }] });
       syncTurnToGoogleDrive(userText, directReply);
