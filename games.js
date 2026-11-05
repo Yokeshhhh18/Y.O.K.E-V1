@@ -1,7 +1,7 @@
-// Y.O.K.E. v19 Interactive Game & 2-Level Human Quest Module (games.js)
+// Y.O.K.E. v19 Interactive Game & 2-Level Secret Quest Module (games.js)
 // Features:
-// 1. 2-Level Secret Human Quest -> Unlocks Yokesh's Hair-Heart Photo (images/quest_heart.jpg) + Emotional Romantic Note
-// 2. 3D Chibi Doll X-O Battle (Dhanya Doll vs Yokesh Doll) with human banter
+// 1. 3D Chibi Doll X-O Battle (Dhanya Doll vs Yokesh Doll)
+// 2. 2-Level Human Quest that unlocks Yokesh's Hair-Heart Photo (images/quest_hair_heart.jpg) + Emotional Romantic Note!
 (function () {
   const $ = (id) => document.getElementById(id);
   const her = (typeof CONFIG !== "undefined" && CONFIG.HER_NAME) || "Dhanya";
@@ -9,12 +9,11 @@
 
   const HER_ICON = (typeof CONFIG !== "undefined" && CONFIG.XO_HER_ICON) || "images/xo_her.png";
   const ME_ICON = (typeof CONFIG !== "undefined" && CONFIG.XO_ME_ICON) || "images/xo_me.png";
-  const QUEST_IMAGE = (typeof CONFIG !== "undefined" && CONFIG.QUEST_IMAGE) || "images/quest_heart.jpg";
-  const QUEST_CAPTION =
-    (typeof CONFIG !== "undefined" && CONFIG.QUEST_CAPTION) ||
-    "Nee en kitta mudila heart shape panni kaata sonna la chello... paruu unakkaga naan senjiten.";
 
-  let questLevel = 1; // 1 -> Level 1, 2 -> Level 2, 3 -> Unlocked!
+  let questCompleted = false;
+  try {
+    questCompleted = localStorage.getItem("yoke_quest_unlocked_v19") === "1";
+  } catch (e) {}
 
   function playGameTone(freq = 520, dur = 0.14, type = "sine") {
     try {
@@ -43,20 +42,24 @@
     });
   }
 
-  function switchTab(tabName) {
-    const isQuest = tabName === "quest";
+  function switchTab(tab) {
+    const isQuest = tab === "quest";
+    $("tabXOBtn")?.classList.toggle("active", !isQuest);
     $("tabQuestBtn")?.classList.toggle("active", isQuest);
-    $("tabXoBtn")?.classList.toggle("active", !isQuest);
-    $("questView")?.classList.toggle("hidden", !isQuest);
     $("xoView")?.classList.toggle("hidden", isQuest);
-    if (isQuest) {
-      renderQuestStage();
-    } else {
+    $("questView")?.classList.toggle("hidden", !isQuest);
+    if (!isQuest) {
       initXO();
+    } else {
+      if (questCompleted) {
+        showQuestRewardState();
+      } else {
+        resetQuestToLevel1();
+      }
     }
   }
 
-  function openGamesModal(defaultTab = "quest") {
+  function openGamesModal(defaultTab = "xo") {
     const modal = $("gamesModal");
     if (!modal) return;
     modal.classList.remove("hidden");
@@ -68,113 +71,64 @@
   }
 
   // =========================================================
-  // 2-LEVEL HUMAN QUEST (UNLOCKS HAIR-HEART PHOTO & ROMANTIC NOTE)
+  // 2-LEVEL HUMAN QUEST LOGIC
   // =========================================================
-  function renderQuestStage() {
-    const box = $("questStageBody");
-    if (!box) return;
+  function resetQuestToLevel1() {
+    $("qNode1")?.classList.add("current");
+    $("qNode1")?.classList.remove("done");
+    $("qNode2")?.classList.remove("current", "done");
+    $("qNodeReward")?.classList.remove("current", "done");
 
-    const node1 = $("qNode1");
-    const node2 = $("qNode2");
-    if (node1) {
-      node1.className = "quest-node " + (questLevel === 1 ? "current" : "done");
-      node1.textContent = questLevel > 1 ? "✓" : "1";
+    $("questStage1")?.classList.remove("hidden");
+    $("questStage2")?.classList.add("hidden");
+    $("questRewardBox")?.classList.add("hidden");
+    if ($("q1Feedback")) {
+      $("q1Feedback").textContent = "Complete Level 1 to reach the final lock.";
+      $("q1Feedback").classList.remove("pop-love");
     }
-    if (node2) {
-      node2.className = "quest-node " + (questLevel === 2 ? "current" : questLevel > 2 ? "done" : "");
-      node2.textContent = questLevel > 2 ? "✓" : "2";
-    }
+  }
 
-    if (questLevel === 1) {
-      box.innerHTML = `
-        <div class="yn-progress">LEVEL 1 OF 2 • OUR LITTLE SECRET</div>
-        <div class="yn-question">Chello, nee en kitta oru naal en mudila (hair-la) enna shape panni kaata solli ketta nyabagam irukka?</div>
-        <div id="questFeedback" class="yn-reaction">Correct-ah choose pannu, illana X-O la oru round enna jeichu Level 1 clear pannu!</div>
-        <div class="quest-choices">
-          <button type="button" class="game-action-btn quest-opt" data-ans="heart">En mudila Heart Shape</button>
-          <button type="button" class="game-action-btn secondary quest-opt" data-ans="wrong1">Star Shape</button>
-          <button type="button" class="game-action-btn secondary quest-opt" data-ans="xo">Win 1 X-O Round Instead</button>
-        </div>
-      `;
-      box.querySelectorAll(".quest-opt").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const ans = btn.dataset.ans;
-          if (ans === "heart") {
-            playWinFanfare();
-            const fb = $("questFeedback");
-            if (fb) {
-              fb.textContent = "Correct-ah solluva nu theriyum chello! Moving to Level 2...";
-              fb.classList.add("pop-love");
-            }
-            setTimeout(() => {
-              questLevel = 2;
-              renderQuestStage();
-            }, 700);
-          } else if (ans === "xo") {
-            switchTab("xo");
-          } else {
-            playGameTone(300, 0.2, "sawtooth");
-            const fb = $("questFeedback");
-            if (fb) fb.textContent = "Ayyo adhu illa chello! Nalla yosi... mudila enna shape ketta?";
-          }
-        });
-      });
-    } else if (questLevel === 2) {
-      box.innerHTML = `
-        <div class="yn-progress">LEVEL 2 OF 2 • FINAL PROMISE</div>
-        <div class="yn-question">Level 1 cleared! Ippo unakkaga naan senja andha photo-vayum ennoda personal note-ayum kaata poren... Aana adhuku munnadi oru unmaiya sollu: En koodave eppovum irupiya chello?</div>
-        <div id="questFeedback" class="yn-reaction">Un manasula irukuradha tap pannu</div>
-        <div class="quest-choices">
-          <button type="button" class="game-action-btn gold-cta quest-l2" data-ans="yes1">Eppovume un kooda dhan Yokesh</button>
-          <button type="button" class="game-action-btn quest-l2" data-ans="yes2">Forever & Always Chello</button>
-        </div>
-      `;
-      box.querySelectorAll(".quest-l2").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          playWinFanfare();
-          window.YOKE_FX?.confetti();
-          questLevel = 3;
-          renderQuestStage();
-          if (typeof window.unlockPersonalQuestReward === "function") {
-            window.unlockPersonalQuestReward();
-          }
-        });
-      });
-    } else {
-      const rawLetter = (typeof CONFIG !== "undefined" && CONFIG.LETTER) || "";
-      const safeLetter = String(rawLetter)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br>");
-      box.innerHTML = `
-        <div class="yn-progress">QUEST COMPLETED • UNLOCKED FOR ${her.toUpperCase()}</div>
-        <h3 class="quest-unlock-title">Nee Ketta Hair-Heart & En Manasu</h3>
-        <div class="quest-photo-frame">
-          <img src="${QUEST_IMAGE}" alt="Hair Heart for ${her}" class="quest-unlocked-img">
-          <p class="quest-photo-cap">${QUEST_CAPTION}</p>
-        </div>
-        <div class="letter quest-letter-box">${safeLetter}</div>
-        <div class="quest-final-actions">
-          <button type="button" id="questReplayBtn" class="game-action-btn secondary">Replay 2-Level Quest</button>
-          <button type="button" id="questViewInPageBtn" class="game-action-btn gold-cta">Keep Unlocked on Page</button>
-        </div>
-      `;
-      $("questReplayBtn")?.addEventListener("click", () => {
-        questLevel = 1;
-        renderQuestStage();
-      });
-      $("questViewInPageBtn")?.addEventListener("click", () => {
-        if (typeof window.unlockPersonalQuestReward === "function") {
-          window.unlockPersonalQuestReward();
-        }
-        closeGamesModal();
-      });
+  function advanceToLevel2() {
+    playWinFanfare();
+    $("qNode1")?.classList.remove("current");
+    $("qNode1")?.classList.add("done");
+    $("qNode2")?.classList.add("current");
+
+    $("questStage1")?.classList.add("hidden");
+    $("questStage2")?.classList.remove("hidden");
+    $("questRewardBox")?.classList.add("hidden");
+    if ($("q2Feedback")) {
+      $("q2Feedback").textContent = "Final step, Chello! Answer to unlock your secret photo & emotional note.";
+      $("q2Feedback").classList.remove("pop-love");
+    }
+  }
+
+  function showQuestRewardState() {
+    questCompleted = true;
+    try {
+      localStorage.setItem("yoke_quest_unlocked_v19", "1");
+    } catch (e) {}
+    playWinFanfare();
+    window.YOKE_FX?.confetti();
+
+    $("qNode1")?.classList.remove("current");
+    $("qNode1")?.classList.add("done");
+    $("qNode2")?.classList.remove("current");
+    $("qNode2")?.classList.add("done");
+    $("qNodeReward")?.classList.add("current", "done");
+
+    $("questStage1")?.classList.add("hidden");
+    $("questStage2")?.classList.add("hidden");
+    $("questRewardBox")?.classList.remove("hidden");
+
+    // Also unlock the main page Emotional Note & Hair-Heart Photo automatically!
+    if (typeof window.unlockPersonalNoteFromQuest === "function") {
+      window.unlockPersonalNoteFromQuest(false);
     }
   }
 
   // =========================================================
-  // X-O BATTLE WITH HUMAN BANTER
+  // X-O BATTLE LOGIC
   // =========================================================
   let board = Array(9).fill("");
   let xoOver = false;
@@ -255,7 +209,7 @@
     renderXOBoard();
     updateScoreUI();
     if ($("xoStatus")) {
-      $("xoStatus").textContent = `Un turn dhan chello! Enna jeichu Level 1 Quest-ah unlock pannu paapom.`;
+      $("xoStatus").textContent = `Un turn dhan chello! Tap a box to place your Queen Doll`;
     }
   }
 
@@ -289,7 +243,7 @@
     if (res) return finishXO(res);
 
     xoLocked = true;
-    if ($("xoStatus")) $("xoStatus").textContent = `${you} yosikiran...`;
+    if ($("xoStatus")) $("xoStatus").textContent = `${you} yosikkuran...`;
 
     setTimeout(() => {
       const aiIdx = pickSmartAIMove(board);
@@ -301,7 +255,7 @@
       renderXOBoard();
       res = checkWinner(board);
       if (res) return finishXO(res);
-      if ($("xoStatus")) $("xoStatus").textContent = "Un turn chello! Place your doll.";
+      if ($("xoStatus")) $("xoStatus").textContent = "Un turn chello! Place your Queen Doll";
     }, 420);
   }
 
@@ -319,18 +273,17 @@
       scores.her++;
       playWinFanfare();
       window.YOKE_FX?.confetti();
-      if (questLevel === 1) questLevel = 2;
-      if ($("xoStatus")) $("xoStatus").textContent = `Parra! Ennaye jeichuta chello! Level 1 Quest unlocked — tap '2-Level Quest' above!`;
-      chatMsg = `X-O la enna jeichuta chello! Promise panna maadhiri Level 1 Quest unlock aagiduchu.`;
+      if ($("xoStatus")) $("xoStatus").textContent = `Woooow ${her} jeichuta! Ippo 2-Level Quest open panni surprise paaru chello!`;
+      chatMsg = `X-O la nee jeichuta chello! Unakkaga vachiruka 2-Level Secret Quest-la ennoda Hair-Heart surprise-ah open panni paaru!`;
     } else if (res.winner === "O") {
       scores.yoke++;
       playGameTone(340, 0.28, "sawtooth");
-      if ($("xoStatus")) $("xoStatus").textContent = `Naan jeichuten chello! Dare: Ippo oru cute smile pannu, apram innoru round vaa.`;
-      chatMsg = `X-O la naan jeichuten chello... Aana un சிரிப்புக்கு munnadi naan eppovume தோத்து போயிடுவேன்.`;
+      if ($("xoStatus")) $("xoStatus").textContent = "Naan jeichuten chello! Punishment: Oru cute smile pannu";
+      chatMsg = `X-O la naan jeichuten! Aana en மனசுல eppovume nee dhan winner chello.`;
     } else {
       scores.draw++;
-      if ($("xoStatus")) $("xoStatus").textContent = "Match Draw! Namma rendu perume semma tough dhan.";
-      chatMsg = `X-O match draw aagiduchu chello. Innoru round poduvoma?`;
+      if ($("xoStatus")) $("xoStatus").textContent = "Match Draw! Namma rendu perume semma tough!";
+      chatMsg = `X-O Match Draw aagiduchu chello! Innoru round vilayaduvoma?`;
     }
     updateScoreUI();
     if (typeof window.addBotGameSummary === "function") {
@@ -340,19 +293,67 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     $("gamesNavBtn")?.addEventListener("click", () => openGamesModal("xo"));
-    $("tabQuestBtn")?.addEventListener("click", () => switchTab("quest"));
-    $("tabXoBtn")?.addEventListener("click", () => switchTab("xo"));
     $("closeGamesBtn")?.addEventListener("click", closeGamesModal);
     $("xoResetBtn")?.addEventListener("click", initXO);
+    $("tabXOBtn")?.addEventListener("click", () => switchTab("xo"));
+    $("tabQuestBtn")?.addEventListener("click", () => switchTab("quest"));
+    $("goToQuestFromXOBtn")?.addEventListener("click", () => switchTab("quest"));
+
     $("xoBoard")?.addEventListener("click", (e) => {
       const cell = e.target.closest(".xo-cell");
       if (cell) handleXOMove(Number(cell.dataset.idx));
     });
+
+    // Level 1 option clicks
+    $("questStage1")?.addEventListener("click", (e) => {
+      const btn = e.target.closest(".quest-opt-btn");
+      if (!btn) return;
+      if (btn.dataset.ans === "correct") {
+        if ($("q1Feedback")) {
+          $("q1Feedback").textContent = "Correct da en Chello! Level 1 unlocked!";
+          $("q1Feedback").classList.add("pop-love");
+        }
+        setTimeout(advanceToLevel2, 550);
+      } else {
+        playGameTone(300, 0.18, "sawtooth");
+        if ($("q1Feedback")) {
+          $("q1Feedback").textContent = "Adhu illa da! Yokesh unna eppovume eppadi kupduvan nu yosi...";
+          $("q1Feedback").classList.remove("pop-love");
+        }
+      }
+    });
+
+    // Level 2 option clicks
+    $("questStage2")?.addEventListener("click", (e) => {
+      const btn = e.target.closest(".quest-opt-btn");
+      if (!btn) return;
+      if ($("q2Feedback")) {
+        $("q2Feedback").textContent =
+          btn.dataset.l2 === "yes"
+            ? "Ama chello! Nee sonnadha epdi seyama iruppen? Idho paaru!"
+            : "Unna pathi oru chinna vishayatha kooda marakka maaten chello! Idho paaru!";
+        $("q2Feedback").classList.add("pop-love");
+      }
+      setTimeout(showQuestRewardState, 650);
+    });
+
+    $("replayQuestBtn")?.addEventListener("click", () => {
+      questCompleted = false;
+      resetQuestToLevel1();
+    });
+
+    $("readNoteFromQuestBtn")?.addEventListener("click", () => {
+      closeGamesModal();
+      if (typeof window.unlockPersonalNoteFromQuest === "function") {
+        window.unlockPersonalNoteFromQuest(true);
+      }
+    });
   });
 
   window.YOKE_GAMES = {
-    open: (tab = "quest") => openGamesModal(tab),
-    close: closeGamesModal,
-    isQuestUnlocked: () => questLevel >= 3
+    open: (tab = "xo") => openGamesModal(tab),
+    openQuest: () => openGamesModal("quest"),
+    isQuestCompleted: () => questCompleted,
+    close: closeGamesModal
   };
 })();

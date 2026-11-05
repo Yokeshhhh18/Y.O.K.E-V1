@@ -1,6 +1,6 @@
-// Y.O.K.E. v20 — Full-Wide Natural Ratio Intro + gemini-3.8-flash AI + Tamil Songs + 2-Level Quest + Inline Sidebar Clear with Date & Time
+// Y.O.K.E. v19 — Full-Wide Natural Ratio Intro + Gemini-3.8-Flash Ready + 2-Level Secret Quest + Tamil Songs + Inline Sidebar Clear
 const $ = (id) => document.getElementById(id);
-let history = [];
+let history = []; // {role: 'user'|'model', parts:[{text}]}
 let unlocked = false;
 let giftRendered = false;
 
@@ -27,41 +27,38 @@ const panel2Src = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.PANEL
 const panel3Src = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.PANEL_3) || "images/panel3.png");
 const panel4Src = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.PANEL_4) || "images/panel3.png");
 const mePicSrc = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.YOUR_PIC) || "images/avatar.jpg");
-const questImgSrc = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.QUEST_IMAGE) || "images/quest_heart.jpg");
-const questCaption = (typeof CONFIG !== "undefined" && CONFIG.QUEST_CAPTION) ||
-  "Nee en kitta mudila heart shape panni kaata sonna la chello... paruu unakkaga naan senjiten.";
+const questPicSrc = resolveDriveUrl((typeof CONFIG !== "undefined" && CONFIG.QUEST_REWARD_IMAGE) || "images/quest_hair_heart.jpg");
 
 const GEM_CARDS = [
-  { icon: "QUEST", title: "2-Level Secret Quest", sub: "Unlock what you asked me to do + My Note", prompt: "__QUEST__" },
+  { icon: "QUEST", title: "2-Level Secret Quest", sub: "Unlock what you asked me to do!", prompt: "__QUEST__" },
   { icon: "X-O", title: "Play Chibi Doll X-O", sub: "Dhanya Doll vs Yokesh Doll", prompt: "Play X-O Game" },
-  { icon: "VOICE", title: "Talk in Yokesh's Voice", sub: "Live voice call in Tamil & Tanglish", prompt: "__VOICE__" },
-  { icon: "CHAT", title: "Unna romba miss panren", sub: "Talk with me right now, chello", prompt: "Unna romba miss panren chello" }
+  { icon: "VOICE", title: "Talk in Yokesh's Voice", sub: "Live voice chat in Tamil & Tanglish", prompt: "__VOICE__" },
+  { icon: "NOTE", title: "Emotional Note", sub: "Unlock & read Yokesh's letter", prompt: "__NOTE__" }
 ];
 
 const CHIPS = (typeof CONFIG !== "undefined" && CONFIG.CHIPS) || [
-  "Unlock 2-Level Quest",
   "Enna pannura chello?",
   "Unna romba miss panren",
-  "Oru cute Tamil kavithai sollu",
+  "Unlock 2-Level Secret Quest",
   "Play X-O Game",
+  "Oru cute Tamil kavithai sollu",
   "Tell me how much you love me"
 ];
 
+const CLIPS = Object.assign(
+  { wish: "audio/test.m4a", tutorial: "audio/test.m4a", miss: "audio/test.m4a" },
+  (typeof CONFIG !== "undefined" && CONFIG.CLIPS) || {}
+);
+
 const TUTORIAL = (typeof CONFIG !== "undefined" && CONFIG.TUTORIAL) || [
-  "Hii chello... Eppadi irukka? Naan un pakkathula illadha neram kooda nee en koodave pesura feel irukanum nu dhan idha unakkaga senjen.",
-  "Unaku eppo en kooda pesanum nu thonudho appo vandhu kelu. Mela X-O Game matrum Note-la oru chinna 2-level quest vechiruken — nee enna panna sonna andha cute hair-heart photo-vum ennoda manasula irundhu ezhudhuna note-um adhula irukku, unlock panni paaru chello."
+  "Hii chello... Eppadi irukka? Un kitta pesama irukka mudiyadhu nu dhan ennoda kuralum manasum eppovume un kooda irukka maadhiri indha idatha unakkagave senjen.",
+  "Unakku eppo en kitta pesanum nu thonudho, illa enna miss pandriyo, eppovume inga vandhu en kitta pesu da. Nee enkitta panna sonna oru cute-aana vishayatha senju, 2-Level Quest ulla ஒளிச்சு vachiruken — mudichu open panni paaru chello!"
 ];
 
-const LETTER = (typeof CONFIG !== "undefined" && CONFIG.LETTER) || "";
+const LETTER = (typeof CONFIG !== "undefined" && CONFIG.LETTER) ||
+  `En uyir Chello ${her}-ku,\n\nNee en வாழ்க்கைல vandha naal la irundhu, ennoda ulagame muzhusa maari pochu da. Unnoda oru chinna sirippu podhum, ennoda ella kavalaiyum marandhudum. Nee enkitta விளையாட்டா mudila heart panni kaami nu sonna la? Nee sonna oru chinna vishayatha kooda ennala marakka mudiyadhu chello — adhan unakkaga idha senju vachiruken.\n\nEvanavo oru naal namma pakkathula illanaalum, nee thaniya feel panna koodadhu nu dhan ennoda kuralaiyum manasaiyum indha Y.O.K.E. ulla vachiruken. Ennaikkume un kooda naan iruppen, un kaiya pidichukittu, unnaye nesichukittu.\n\nHappy Birthday, en azhagi, en thangam, en Chello. En idhayam eppovume unakku mattum dhan.\n\nEndrum un நினைவுகளுடன்,\nUn ${you}`;
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-function formatDateTimeNow() {
-  const now = new Date();
-  const d = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  const t = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  return `${d}, ${t}`;
-}
 
 function safeImg(el, src) {
   if (!el) return;
@@ -102,9 +99,16 @@ function burstHearts(n) {
 // =========================================================
 // MULTI-SESSION CHAT HISTORY SIDEBAR (WITH DATE, TIME & INLINE CLEAR)
 // =========================================================
-const SESSIONS_KEY = "yoke_sessions_v20";
+const SESSIONS_KEY = "yoke_sessions_v19";
 let sessions = [];
 let activeSessionId = null;
+
+function formatDateTimeNow() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+  const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return `${dateStr}, ${timeStr}`;
+}
 
 function loadSessionsFromStorage() {
   try {
@@ -116,7 +120,7 @@ function loadSessionsFromStorage() {
   if (!Array.isArray(sessions) || sessions.length === 0) {
     const first = {
       id: "sess_" + Date.now(),
-      title: "Chat Session",
+      title: "Chat with Yokesh",
       updatedAt: formatDateTimeNow(),
       messages: []
     };
@@ -133,8 +137,8 @@ function saveSessionsToStorage() {
       cur.messages = history.slice(-50);
       cur.updatedAt = formatDateTimeNow();
       const firstUser = cur.messages.find((m) => m.role === "user")?.parts?.[0]?.text;
-      if (firstUser && (cur.title === "Chat Session" || cur.title === "New Chat")) {
-        cur.title = firstUser.slice(0, 28);
+      if (firstUser && (cur.title === "Chat with Yokesh" || cur.title === "New Chat")) {
+        cur.title = firstUser.slice(0, 26);
       }
     }
     localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
@@ -148,15 +152,15 @@ function renderSessionList() {
   box.innerHTML = sessions
     .map(
       (s) => `
-    <div class="sess-item ${s.id === activeSessionId ? "active" : ""}" data-id="${esc(s.id)}">
-      <div class="sess-top-row">
+    <div class="sess-item-wrap ${s.id === activeSessionId ? "active" : ""}" data-id="${esc(s.id)}">
+      <div class="sess-main-click" data-id="${esc(s.id)}">
         <div class="sess-title">${esc(s.title)}</div>
-        <button type="button" class="sess-inline-clear" data-clear-id="${esc(s.id)}" title="Clear this chat">Clear</button>
+        <div class="sess-meta">
+          <span>${s.messages.length} msgs</span>
+          <span class="sess-datetime">${esc(s.updatedAt || formatDateTimeNow())}</span>
+        </div>
       </div>
-      <div class="sess-meta">
-        <span>${s.messages.length} msgs</span>
-        <span>${esc(s.updatedAt || formatDateTimeNow())}</span>
-      </div>
+      <button type="button" class="sess-inline-clear-btn" data-del-id="${esc(s.id)}" title="Clear / Delete this chat">Clear</button>
     </div>`
     )
     .join("");
@@ -175,34 +179,39 @@ function switchSession(id) {
   renderSessionList();
 }
 
-function clearOrDeleteSession(id) {
-  if (sessions.length <= 1) {
+function deleteSingleSession(id) {
+  const idx = sessions.findIndex((s) => s.id === id);
+  if (idx === -1) return;
+  sessions.splice(idx, 1);
+  if (sessions.length === 0) {
+    const fresh = {
+      id: "sess_" + Date.now(),
+      title: "Chat with Yokesh",
+      updatedAt: formatDateTimeNow(),
+      messages: []
+    };
+    sessions.push(fresh);
+    activeSessionId = fresh.id;
     history = [];
-    sessions[0].messages = [];
-    sessions[0].title = "Chat Session";
-    sessions[0].updatedAt = formatDateTimeNow();
     if ($("chat")) $("chat").innerHTML = "";
-    addMsg(TUTORIAL[0], "bot");
-    history.push({ role: "model", parts: [{ text: TUTORIAL[0] }] });
-    saveSessionsToStorage();
-    return;
-  }
-  sessions = sessions.filter((s) => s.id !== id);
-  if (activeSessionId === id) {
-    activeSessionId = sessions[0].id;
-    switchSession(activeSessionId);
+    TUTORIAL.forEach((line) => {
+      addMsg(line, "bot");
+      history.push({ role: "model", parts: [{ text: line }] });
+    });
+  } else if (activeSessionId === id) {
+    switchSession(sessions[0].id);
   }
   saveSessionsToStorage();
 }
 
 $("sessionList")?.addEventListener("click", (e) => {
-  const clrBtn = e.target.closest(".sess-inline-clear");
-  if (clrBtn) {
+  const delBtn = e.target.closest(".sess-inline-clear-btn");
+  if (delBtn) {
     e.stopPropagation();
-    clearOrDeleteSession(clrBtn.dataset.clearId);
+    deleteSingleSession(delBtn.dataset.delId);
     return;
   }
-  const item = e.target.closest(".sess-item");
+  const item = e.target.closest(".sess-item-wrap");
   if (item) switchSession(item.dataset.id);
 });
 
@@ -217,6 +226,19 @@ $("newChatBtn")?.addEventListener("click", () => {
   switchSession(nw.id);
   addMsg(TUTORIAL[0], "bot");
   history.push({ role: "model", parts: [{ text: TUTORIAL[0] }] });
+  saveSessionsToStorage();
+});
+
+$("clearHistoryBtn")?.addEventListener("click", () => {
+  localStorage.removeItem(SESSIONS_KEY);
+  sessions = [];
+  if ($("chat")) $("chat").innerHTML = "";
+  loadSessionsFromStorage();
+  renderSessionList();
+  TUTORIAL.forEach((line) => {
+    addMsg(line, "bot");
+    history.push({ role: "model", parts: [{ text: line }] });
+  });
   saveSessionsToStorage();
 });
 
@@ -245,17 +267,11 @@ function syncTurnToGoogleDrive(userMessage, yokeReply) {
 }
 
 // =========================================================
-// TAMIL ROMANTIC SONGS MELODY ENGINE
+// TAMIL ROMANTIC SONGS SYNTHESIZER ("Munbe Vaa", "Kanmani Anbodu", "Anbae Peranbae", "Uyire")
 // =========================================================
 let audioCtx = null;
 let bgmMode = 0;
-const TAMIL_SONGS = (typeof CONFIG !== "undefined" && CONFIG.TAMIL_SONGS) || [
-  { name: "Munbe Vaa", notes: [293.66, 329.63, 349.23, 392.00, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63, 293.66, 349.23] },
-  { name: "Nenjukkul Peidhidum", notes: [329.63, 392.00, 440.00, 493.88, 523.25, 493.88, 440.00, 392.00, 349.23, 392.00, 440.00, 329.63] },
-  { name: "Pirai Thedum", notes: [261.63, 311.13, 349.23, 392.00, 415.30, 392.00, 349.23, 311.13, 293.66, 349.23, 311.13, 261.63] },
-  { name: "Anbil Avan", notes: [349.23, 440.00, 523.25, 587.33, 659.25, 587.33, 523.25, 440.00, 392.00, 440.00, 523.25, 349.23] },
-  { name: "Hosanna", notes: [392.00, 440.00, 493.88, 587.33, 523.25, 493.88, 440.00, 392.00, 329.63, 392.00, 440.00, 392.00] }
-];
+const BGM_MODES = ["Munbe Vaa", "Kanmani Anbodu", "Anbae Peranbae", "Uyire Melody", "OFF"];
 let bgmInterval = null;
 let introBgmTimers = [];
 
@@ -286,6 +302,24 @@ function playCinemaImpact(freq = 65, duration = 1.5) {
   gain.connect(ctx.destination);
   osc.start(now);
   osc.stop(now + duration);
+
+  [freq, freq * 1.5, freq * 2, freq * 2.5].forEach((f) => {
+    const bOsc = ctx.createOscillator();
+    const bFilter = ctx.createBiquadFilter();
+    const bGain = ctx.createGain();
+    bOsc.type = "sawtooth";
+    bOsc.frequency.setValueAtTime(f, now);
+    bFilter.type = "lowpass";
+    bFilter.frequency.setValueAtTime(1200, now);
+    bFilter.frequency.exponentialRampToValueAtTime(200, now + duration);
+    bGain.gain.setValueAtTime(0.11, now);
+    bGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    bOsc.connect(bFilter);
+    bFilter.connect(bGain);
+    bGain.connect(ctx.destination);
+    bOsc.start(now);
+    bOsc.stop(now + duration);
+  });
 }
 
 let introStageMusic = "slam";
@@ -315,8 +349,8 @@ function startIntroMassBGM() {
     osc.type = introStageMusic === "heroine" || introStageMusic === "climax" ? "triangle" : "sawtooth";
     osc.frequency.setValueAtTime(f, now);
     flt.type = "lowpass";
-    flt.frequency.setValueAtTime(1600, now);
-    g.gain.setValueAtTime(0.09, now);
+    flt.frequency.setValueAtTime(introStageMusic === "hero" ? 950 : 1800, now);
+    g.gain.setValueAtTime(0.095, now);
     g.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
     osc.connect(flt);
     flt.connect(g);
@@ -335,55 +369,78 @@ function stopIntroMassBGM() {
 function startChatBGM(modeIndex = 0) {
   if (bgmInterval) clearInterval(bgmInterval);
   bgmInterval = null;
-  const totalModes = TAMIL_SONGS.length + 1;
-  bgmMode = modeIndex % totalModes;
+  bgmMode = modeIndex % BGM_MODES.length;
+  const label = BGM_MODES[bgmMode];
+  if ($("bgmLabel")) $("bgmLabel").textContent = label;
 
-  if (bgmMode === TAMIL_SONGS.length) {
-    if ($("bgmLabel")) $("bgmLabel").textContent = "Music: OFF";
+  if (label === "OFF") {
     $("bgmModeBtn")?.classList.remove("playing");
     return;
   }
-
-  const song = TAMIL_SONGS[bgmMode];
-  if ($("bgmLabel")) $("bgmLabel").textContent = song.name;
 
   const ctx = ensureAudioCtx();
   if (!ctx) return;
   $("bgmModeBtn")?.classList.add("playing");
 
+  // Melodic note progressions inspired by classic Tamil love themes
+  const tamilMelodies = {
+    "Munbe Vaa": {
+      notes: [293.66, 329.63, 349.23, 440.00, 392.00, 349.23, 329.63, 293.66, 349.23, 440.00, 523.25, 493.88, 440.00, 392.00],
+      wave: "sine", speed: 520, vol: 0.05, sustain: 1.6
+    },
+    "Kanmani Anbodu": {
+      notes: [261.63, 293.66, 329.63, 392.00, 440.00, 392.00, 329.63, 293.66, 329.63, 392.00, 523.25, 440.00, 392.00, 329.63],
+      wave: "triangle", speed: 460, vol: 0.042, sustain: 1.4
+    },
+    "Anbae Peranbae": {
+      notes: [329.63, 392.00, 493.88, 440.00, 392.00, 369.99, 329.63, 293.66, 329.63, 440.00, 493.88, 587.33, 523.25, 493.88],
+      wave: "sine", speed: 500, vol: 0.048, sustain: 1.55
+    },
+    "Uyire Melody": {
+      notes: [220.00, 261.63, 329.63, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63, 329.63, 392.00, 349.23],
+      wave: "triangle", speed: 560, vol: 0.042, sustain: 1.5
+    }
+  };
+
+  const cfg = tamilMelodies[label] || tamilMelodies["Munbe Vaa"];
   let idx = 0;
+
   function playStep() {
-    if (bgmMode === TAMIL_SONGS.length || !audioCtx) return;
+    if (BGM_MODES[bgmMode] === "OFF" || !audioCtx) return;
     const now = ctx.currentTime;
-    const freq = song.notes[idx % song.notes.length];
+    const freq = cfg.notes[idx % cfg.notes.length];
     idx++;
 
     const osc = ctx.createOscillator();
     const flt = ctx.createBiquadFilter();
     const gain = ctx.createGain();
-    osc.type = "triangle";
+    osc.type = cfg.wave;
     osc.frequency.setValueAtTime(freq, now);
     flt.type = "lowpass";
-    flt.frequency.setValueAtTime(1500, now);
+    flt.frequency.setValueAtTime(1450, now);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.048, now + 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.5);
+    gain.gain.linearRampToValueAtTime(cfg.vol, now + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + cfg.sustain);
 
     osc.connect(flt);
-    flt.connect(gain);
+    osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(now);
-    osc.stop(now + 1.55);
+    osc.stop(now + cfg.sustain + 0.05);
   }
 
   playStep();
-  bgmInterval = setInterval(playStep, 540);
+  bgmInterval = setInterval(playStep, cfg.speed);
 }
 
 $("bgmModeBtn")?.addEventListener("click", () => {
   startChatBGM(bgmMode + 1);
 });
+
+window.playTamilSongByIndex = function (idx) {
+  startChatBGM(idx);
+};
 
 // =========================================================
 // YOKESH'S VOICE ENGINE (STRICTLY MALE / YOKESH'S VOICE TONE)
@@ -416,12 +473,14 @@ function pickYokeshMaleVoice(voices, hasTamilScript) {
     return (
       pool.find((v) => /ta-IN|tamil/i.test(v.lang + " " + v.name) && /male|valluvar|prabhat|rishi|hemant/i.test(v.name)) ||
       pool.find((v) => /ta-IN|tamil/i.test(v.lang + " " + v.name)) ||
+      pool.find((v) => /en-IN|hi-IN/i.test(v.lang) && /male|prabhat|rishi|hemant/i.test(v.name)) ||
       pool[0]
     );
   }
   return (
     pool.find((v) => /en-IN|ta-IN/i.test(v.lang) && /male|prabhat|rishi|hemant|valluvar|david|mark|daniel/i.test(v.name)) ||
     pool.find((v) => /male|prabhat|rishi|david|mark|daniel|guy/i.test(v.name)) ||
+    pool.find((v) => /en-IN|ta-IN/i.test(v.lang)) ||
     pool[0]
   );
 }
@@ -568,7 +627,7 @@ function clearStageTimeouts() {
 
 function startIntro() {
   unlockAudio();
-  startChatBGM(TAMIL_SONGS.length);
+  startChatBGM(4); // OFF during intro
   clearStageTimeouts();
   introDone = false;
   if ($("wish")) $("wish").textContent = "";
@@ -600,7 +659,7 @@ function startIntro() {
     showStage("jnStage3");
   }, 8000));
 
-  // PANEL 4 (12.0s - 17.2s): HAPPY -> BIRTHDAY -> CHELLO
+  // PANEL 4 (12.0s - 17.2s): HAPPY (bang 1) -> BIRTHDAY (bang 2) -> CHELLO (bang 3)
   stageTimeouts.push(setTimeout(() => {
     if (introDone) return;
     introStageMusic = "climax";
@@ -613,11 +672,13 @@ function startIntro() {
     });
     showStage("jnStage4");
 
+    // Bang 1: HAPPY
     triggerFlashAndShake();
     playCinemaImpact(75, 1.2);
     $("p4Bang1")?.classList.remove("hidden-bang");
     $("p4Bang1")?.classList.add("bang-in");
 
+    // Bang 2: BIRTHDAY
     stageTimeouts.push(setTimeout(() => {
       if (introDone) return;
       triggerFlashAndShake();
@@ -626,6 +687,7 @@ function startIntro() {
       $("p4Bang2")?.classList.add("bang-in");
     }, 1050));
 
+    // Bang 3: CHELLO
     stageTimeouts.push(setTimeout(() => {
       if (introDone) return;
       triggerFlashAndShake();
@@ -714,7 +776,7 @@ function tick() {
 }
 
 // =========================================================
-// FAST CONVERSATIONAL AI + 2-LEVEL QUEST & NOTE INTEGRATION
+// CONVERSATIONAL AI + 2-LEVEL QUEST & EMOTIONAL NOTE
 // =========================================================
 async function beginChat() {
   burstHearts(14);
@@ -732,7 +794,7 @@ async function beginChat() {
   }
 
   for (let i = 0; i < TUTORIAL.length; i++) {
-    await new Promise((r) => setTimeout(r, i === 0 ? 250 : 800));
+    await new Promise((r) => setTimeout(r, i === 0 ? 250 : 750));
     addMsg(TUTORIAL[i], "bot");
     history.push({ role: "model", parts: [{ text: TUTORIAL[i] }] });
   }
@@ -758,12 +820,13 @@ if ($("chips")) {
   $("chips").addEventListener("click", (e) => {
     const card = e.target.closest(".gem-card");
     if (!card) return;
-    if (card.dataset.prompt === "__VOICE__") {
+    const p = card.dataset.prompt;
+    if (p === "__VOICE__") {
       $("micBtn")?.click();
-    } else if (card.dataset.prompt === "__QUEST__") {
-      window.YOKE_GAMES?.open("quest");
+    } else if (p === "__QUEST__" || p === "__NOTE__") {
+      handleNoteOrQuestClick();
     } else {
-      send(card.dataset.prompt);
+      send(p);
     }
   });
 }
@@ -775,38 +838,64 @@ if ($("quickBar")) {
   });
 }
 
-// ---------- 2-Level Quest Reward & Emotional Romantic Note ----------
+// ---------- 2-Level Quest & Emotional Personal Note Section ----------
 function renderGift() {
   if (giftRendered) return;
   giftRendered = true;
 
+  const songsList = ((typeof CONFIG !== "undefined" && CONFIG.TAMIL_SONGS) || [
+    { title: "Munbe Vaa En Anbe Vaa", subtitle: "Sillunu Oru Kaadhal • A.R. Rahman" },
+    { title: "Kanmani Anbodu Kaadhalan", subtitle: "Guna • Ilaiyaraaja" },
+    { title: "Anbae Peranbae", subtitle: "NGK • Yuvan Shankar Raja" },
+    { title: "Uyire Melody", subtitle: "Romantic Tamil Melody" }
+  ])
+    .map(
+      (s, idx) => `
+      <button type="button" class="card songcard tamil-song-btn" onclick="window.playTamilSongByIndex(${idx})">
+        <span class="icon">♫</span>
+        <span>${esc(s.title)}<small>${esc(s.subtitle)} • Tap to play melody</small></span>
+      </button>`
+    )
+    .join("");
+
   $("giftContent").innerHTML = `
-    <div class="quest-photo-frame">
-      <img src="${esc(questImgSrc)}" alt="Hair Heart for ${esc(her)}" class="quest-unlocked-img">
-      <p class="quest-photo-cap">${esc(questCaption)}</p>
+    <div class="quest-unlocked-showcase">
+      <h3 class="section-title">Nee Sonna Maadhiriye Senjuten, En Chello</h3>
+      <p class="quest-showcase-sub">You asked me to make a heart with my hair... and I kept my promise just for you:</p>
+      <div class="quest-photo-frame main-note-photo">
+        <img src="${esc(questPicSrc)}" alt="Yokesh Hair Heart for Dhanya">
+        <div class="quest-photo-caption">Every little thing you ask me is special to me, Chello.</div>
+      </div>
     </div>
     <div class="letter">${esc(LETTER).replace(/\n/g, "<br>")}</div>
-  `;
+    <div>
+      <h3 class="section-title">Tamil Melodies For You</h3>
+      <div class="list">${songsList}</div>
+    </div>`;
 }
 
-window.unlockPersonalQuestReward = function () {
+window.unlockPersonalNoteFromQuest = function (scrollToIt = true) {
   renderGift();
   $("giftBtn")?.classList.add("hidden");
   $("giftContent")?.classList.remove("hidden");
-  burstHearts(18);
+  burstHearts(16);
   window.YOKE_FX?.confetti();
-  setTimeout(() => $("gift")?.scrollIntoView({ behavior: "smooth" }), 200);
+  if (scrollToIt) {
+    setTimeout(() => $("gift")?.scrollIntoView({ behavior: "smooth" }), 150);
+  }
 };
 
-function openNoteOrQuest() {
-  if (window.YOKE_GAMES?.isQuestUnlocked && window.YOKE_GAMES.isQuestUnlocked()) {
-    window.unlockPersonalQuestReward();
+function handleNoteOrQuestClick() {
+  if (window.YOKE_GAMES?.isQuestCompleted && window.YOKE_GAMES.isQuestCompleted()) {
+    window.unlockPersonalNoteFromQuest(true);
   } else {
-    window.YOKE_GAMES?.open("quest");
+    // Open the 2-Level Quest modal so she completes the 2 levels to unlock the Hair-Heart photo & Emotional Note!
+    window.YOKE_GAMES?.openQuest();
   }
 }
-$("giftBtn")?.addEventListener("click", openNoteOrQuest);
-$("giftNavBtn")?.addEventListener("click", openNoteOrQuest);
+
+$("giftBtn")?.addEventListener("click", handleNoteOrQuestClick);
+$("giftNavBtn")?.addEventListener("click", handleNoteOrQuestClick);
 
 // ---------- Chat Stream ----------
 function scrollToBottom() {
@@ -871,42 +960,24 @@ function addTyping() {
 function getYokeshSystemPrompt() {
   const customBase = typeof buildSystemPrompt === "function" ? buildSystemPrompt() : "";
   return `${customBase}
-You are speaking directly as ${you}'s living digital heart and voice to his girlfriend ${her} ("chello").
+You are ${you} speaking directly and lovingly to his girlfriend ${her} (whom he calls "chello" and "chellam") through Y.O.K.E.
 CRITICAL CONVERSATION RULES:
-1. Speak like a real human boyfriend (${you}), never like a bot.
-2. Chat naturally, intelligently, and directly about WHATEVER she asks or says in Chennai Tanglish / Tamil / English (using pet names like "chello", "chellam", "thangam", "kuttyma").
-3. Do NOT use unnecessary emojis.`;
+1. Chat naturally, warmly, and directly like a real human boyfriend in Chennai Tanglish / Tamil / English (using pet names like "chello", "chellam", "thangam", "kuttyma", "da", "ma").
+2. Never sound like a bot or assistant. Do NOT use unnecessary emojis.
+3. Never mention "Gemini" anywhere.`;
 }
 
-// Prioritizes gemini-3.8-flash first + automatic ListModels discovery!
 async function callDirectYokeFallback(userText, systemPrompt, recentHistory) {
   if (!DIRECT_API_KEY) return null;
   const models = [
     "gemini-3.8-flash",
-    "gemini-3.8-flash-preview",
-    "gemini-flash-latest",
-    "gemini-3.1-flash-lite-preview",
     "gemini-3-flash-preview",
-    "gemini-2.5-flash"
+    "gemini-3.1-flash-lite-preview",
+    "gemini-flash-latest",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash"
   ];
-  try {
-    const lr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(DIRECT_API_KEY)}`);
-    if (lr.ok) {
-      const ld = await lr.json();
-      (ld.models || []).forEach((m) => {
-        const name = String(m.name || "").replace(/^models\//, "");
-        if (
-          m.supportedGenerationMethods?.includes("generateContent") &&
-          /gemini/i.test(name) &&
-          !/tts|image|embedding|vision|aqa|veo|imagen/i.test(name) &&
-          !models.includes(name)
-        ) {
-          models.push(name);
-        }
-      });
-    }
-  } catch (e) {}
-
   for (const m of models) {
     try {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(DIRECT_API_KEY)}`, {
@@ -915,17 +986,19 @@ async function callDirectYokeFallback(userText, systemPrompt, recentHistory) {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents: recentHistory,
-          generationConfig: { temperature: 0.85, maxOutputTokens: 350 }
+          generationConfig: { temperature: 0.82, maxOutputTokens: 350 }
         })
       });
+      const d = await r.json().catch(() => ({}));
       if (r.ok) {
-        const d = await r.json();
-        const text = (d.candidates?.[0]?.content?.parts || [])
-          .filter((p) => !p.thought)
-          .map((p) => p.text || "")
-          .join("")
-          .trim();
+        const text = (d.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim();
         if (text) return text;
+      } else {
+        const errMsg = d?.error?.message || "";
+        const matchSuggested = errMsg.match(/models\/([a-zA-Z0-9._-]+)/);
+        if (matchSuggested && matchSuggested[1] && !models.includes(matchSuggested[1])) {
+          models.push(matchSuggested[1]);
+        }
       }
     } catch (e) {}
   }
@@ -968,7 +1041,7 @@ async function askYokeAI(userText, byVoice) {
     }
 
     const errReason = data.message || data.error || `HTTP ${res.status}`;
-    const diagMsg = `[Y.O.K.E. API Setup Needed]: ${errReason}.`;
+    const diagMsg = `[Y.O.K.E. API Setup Needed]: ${errReason}`;
     history.push({ role: "model", parts: [{ text: diagMsg }] });
     saveSessionsToStorage();
     return diagMsg;
@@ -994,8 +1067,8 @@ async function send(text) {
     window.YOKE_GAMES?.open("xo");
     return;
   }
-  if (/^unlock 2-level quest|surprise/i.test(text.trim())) {
-    openNoteOrQuest();
+  if (/quest|surprise/i.test(text.trim())) {
+    handleNoteOrQuestClick();
     return;
   }
 
@@ -1022,13 +1095,13 @@ async function send(text) {
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let vLang = "ta-IN", rec = null, vBusy = false;
 const setOrb = (cls, label) => { $("orb").className = cls; $("vstate").textContent = label; };
-const idleLabel = () => (SR ? "Tap the orb and speak in Tamil or Tanglish" : "Tap the orb to hear Y.O.K.E. talk");
+const idleLabel = () => (SR ? "Tap the orb and speak in Tamil or Tanglish" : "Tap the orb to hear Yokesh's voice");
 
 $("micBtn")?.addEventListener("click", () => {
   unlockAudio();
   $("voice").classList.add("on");
   setOrb("", idleLabel());
-  $("vtext").textContent = "pesalamaa cheloo...";
+  $("vtext").textContent = "Speak in Tamil, Tanglish, or English (e.g., 'Enna panra chello?', 'I miss you')";
 });
 
 $("playRealVoiceBtn")?.addEventListener("click", async () => {

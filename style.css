@@ -1404,70 +1404,141 @@ body.unlocked {
 
 
 /* =========================================================
-   v20 INLINE SIDEBAR CLEAR WITH DATE/TIME & 2-LEVEL QUEST REWARD
+   v19 ADDITIONS: 2-LEVEL SECRET QUEST, HAIR-HEART REWARD & SIDEBAR CLEAR WITH DATE/TIME
    ========================================================= */
-.avatar, .side-avatar, .msg-avatar {
-  object-fit: cover;
-  object-position: center 28%;
+.side-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
 }
-.sess-top-row {
+.side-clear-all-link {
+  background: transparent;
+  border: 1px solid rgba(255, 158, 194, 0.35);
+  color: #ffb3d1;
+  font: 700 0.68rem "Plus Jakarta Sans", sans-serif;
+  padding: 3px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.side-clear-all-link:hover {
+  border-color: var(--gold);
+  color: #fff;
+  background: rgba(233, 30, 99, 0.3);
+}
+.sess-item-wrap {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 179, 205, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fceef5;
+  cursor: pointer;
+  transition: all 0.18s;
 }
-.sess-inline-clear {
-  background: rgba(255, 77, 136, 0.18);
-  border: 1px solid rgba(255, 209, 102, 0.45);
+.sess-item-wrap.active, .sess-item-wrap:hover {
+  border-color: var(--gold);
+  background: rgba(233, 30, 99, 0.22);
+}
+.sess-main-click {
+  flex: 1;
+  min-width: 0;
+}
+.sess-datetime {
   color: #ffd166;
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 2px 8px;
+  font-weight: 600;
+}
+.sess-inline-clear-btn {
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 179, 205, 0.38);
+  color: #ffd6e7;
+  font: 700 0.7rem "Plus Jakarta Sans", sans-serif;
+  padding: 4px 10px;
   border-radius: 999px;
   cursor: pointer;
-  flex-shrink: 0;
+  transition: all 0.15s;
 }
-.sess-inline-clear:hover {
-  background: rgba(233, 30, 99, 0.55);
+.sess-inline-clear-btn:hover {
+  background: #e91e63;
+  border-color: var(--gold);
   color: #fff;
 }
-.quest-choices {
+
+/* 2-Level Quest Modal & Hair-Heart Photo Reveal */
+.quest-stage-box {
+  padding: 10px 6px;
+}
+.quest-options-grid {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 12px;
+  margin: 14px 0;
 }
-.quest-unlock-title {
-  font-family: "Cinzel Decorative", serif;
-  color: var(--gold);
-  font-size: 1.25rem;
-  margin: 8px 0;
+.quest-opt-btn {
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 1.5px solid rgba(255, 209, 102, 0.45);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font: 700 0.92rem "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s, background 0.2s;
+}
+.quest-opt-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.45), rgba(255, 143, 0, 0.3));
+}
+.quest-reward-box {
+  padding: 6px;
+  animation: pop 0.4s ease;
 }
 .quest-photo-frame {
-  background: #1a0715;
-  border: 2px solid var(--gold);
-  border-radius: 18px;
-  padding: 12px;
-  margin: 10px auto 16px;
-  max-width: 520px;
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.65);
+  max-width: 420px;
+  margin: 10px auto 14px;
+  background: #140510;
+  border: 2.5px solid var(--gold);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.75), 0 0 28px rgba(255, 215, 0, 0.35);
 }
-.quest-unlocked-img {
+.quest-photo-frame img {
   width: 100%;
-  max-height: 320px;
-  object-fit: cover;
-  border-radius: 12px;
+  height: auto;
   display: block;
 }
-.quest-photo-cap {
-  margin: 10px 0 2px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #ffe082;
-}
-.quest-letter-box {
-  max-height: 240px;
-  overflow-y: auto;
+.quest-photo-caption {
+  padding: 10px 14px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
   font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffe57f;
+  background: rgba(30, 8, 24, 0.95);
+}
+.quest-unlocked-showcase {
+  background: rgba(36, 10, 30, 0.85);
+  border: 1.5px solid rgba(255, 209, 102, 0.45);
+  border-radius: 24px;
+  padding: 18px 16px;
+}
+.quest-showcase-sub {
+  color: #f3c4da;
+  font-size: 0.92rem;
+  margin: 4px 0 12px;
+}
+.tamil-song-btn {
+  width: 100%;
+  cursor: pointer;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+.avatar, .side-avatar, .msg-avatar {
+  object-fit: cover;
+  object-position: center 25%;
 }

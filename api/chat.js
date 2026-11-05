@@ -1,38 +1,5 @@
-// Vercel Serverless Function: Y.O.K.E. Conversational Engine (v19)
-// Prioritizes models/gemini-3.8-flash + Auto Model Discovery for instant responses!
-
-async function discoverAvailableModels(key) {
-  try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
-    if (!r.ok) return [];
-    const data = await r.json();
-    const models = (data.models || [])
-      .filter((m) =>
-        Array.isArray(m.supportedGenerationMethods) &&
-        m.supportedGenerationMethods.includes("generateContent") &&
-        /gemini/i.test(m.name || "") &&
-        !/tts|image|embedding|vision|aqa|veo|imagen|robotics|computer-use/i.test(m.name || "")
-      )
-      .map((m) => String(m.name).replace(/^models\//, ""));
-
-    models.sort((a, b) => {
-      const score = (name) => {
-        if (name === "gemini-3.8-flash") return 120;
-        if (name.includes("3.8-flash")) return 115;
-        if (name.includes("3.1-flash") || name.includes("3-flash")) return 110;
-        if (name === "gemini-flash-latest") return 105;
-        if (name === "gemini-2.5-flash") return 95;
-        if (name.includes("flash")) return 85;
-        if (name.includes("3.8") || name.includes("3.1") || name.includes("3")) return 75;
-        return 10;
-      };
-      return score(b) - score(a);
-    });
-    return models;
-  } catch (e) {
-    return [];
-  }
-}
+// Vercel Serverless Function: Y.O.K.E. Conversational AI Engine (v19)
+// Supports gemini-3.8-flash + auto-extracts any recommended model from API errors + ListModels discovery!
 
 async function callModel(key, model, payload) {
   const cleanModel = String(model).replace(/^models\//, "").trim();
@@ -44,6 +11,40 @@ async function callModel(key, model, payload) {
   });
   const data = await r.json().catch(() => ({}));
   return { ok: r.ok, status: r.status, data, model: cleanModel };
+}
+
+async function discoverAvailableModels(key) {
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    const models = (data.models || [])
+      .filter((m) =>
+        Array.isArray(m.supportedGenerationMethods) &&
+        m.supportedGenerationMethods.includes("generateContent") &&
+        /gemini/i.test(m.name || "") &&
+        !/tts|image|embedding|vision|aqa|veo|imagen/i.test(m.name || "")
+      )
+      .map((m) => String(m.name).replace(/^models\//, ""));
+
+    models.sort((a, b) => {
+      const score = (name) => {
+        if (name.includes("3.8-flash")) return 120;
+        if (name.includes("3-flash") || name.includes("3.0-flash")) return 110;
+        if (name.includes("3.1-flash")) return 105;
+        if (name.includes("flash-latest")) return 100;
+        if (name.includes("2.5-flash-lite")) return 95;
+        if (name.includes("2.5-flash")) return 90;
+        if (name.includes("flash")) return 80;
+        if (name.includes("pro")) return 60;
+        return 10;
+      };
+      return score(b) - score(a);
+    });
+    return models;
+  } catch (e) {
+    return [];
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -85,61 +86,73 @@ module.exports = async function handler(req, res) {
     }));
 
     const systemPrompt = String(body.systemPrompt || "").slice(0, 6000) +
-      "\nVoice & Persona Reference: Speak like Yokesh himself talking naturally in Chennai Tanglish / Tamil ('Hii chello...'). Sound warm, human, and affectionate, never like a bot. Do not use unnecessary emojis.";
+      "\nVoice & Persona Reference: Speak like Yokesh talking lovingly and naturally in Chennai Tanglish / Tamil to his Chello (Dhanya). Never sound like a bot. Never mention Gemini. Do not use unnecessary emojis.";
 
     const envModel = (process.env.GEMINI_MODEL || "").trim();
-    const validEnvModel = envModel && !/1\.5|2\.5/i.test(envModel) ? envModel : null;
 
-    // Prioritize gemini-3.8-flash first as required for new users!
-    const baseCandidates = [
-      validEnvModel,
+    // Put gemini-3.8-flash and latest flash models first
+    const candidates = [
+      envModel,
       "gemini-3.8-flash",
-      "gemini-3.8-flash-preview",
-      "gemini-flash-latest",
-      "gemini-3.1-flash-lite-preview",
       "gemini-3-flash-preview",
-      "gemini-2.5-flash"
+      "gemini-3.1-flash-lite-preview",
+      "gemini-flash-latest",
+      "gemini-2.5-flash-lite",
+      "gemini-2.5-flash",
+      "gemini-2.0-flash"
     ].filter(Boolean);
 
     let reply = "";
     let primaryError = null;
+    const tried = new Set();
 
-    async function tryModelList(modelsToTry) {
-      for (const model of modelsToTry) {
-        const attempt = await callModel(key, model, {
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: recent,
-          generationConfig: {
-            temperature: 0.85,
-            maxOutputTokens: 350
-          }
-        });
+    async function trySingleModel(model) {
+      const clean = String(model).replace(/^models\//, "").trim();
+      if (!clean || tried.has(clean)) return "";
+      tried.add(clean);
 
-        if (attempt.ok) {
-          const text = (attempt.data.candidates?.[0]?.content?.parts || [])
-            .filter((p) => !p.thought)
-            .map((p) => p.text || "")
-            .join("")
-            .trim();
-          if (text) return text;
-        } else {
-          const errMsg = attempt.data?.error?.message || `HTTP ${attempt.status}`;
-          if (attempt.status !== 404 && !/no longer available/i.test(errMsg)) {
-            if (!primaryError) primaryError = `[${model}]: ${errMsg}`;
-          }
+      const attempt = await callModel(key, clean, {
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: recent,
+        generationConfig: {
+          temperature: 0.82,
+          maxOutputTokens: 350
+        }
+      });
+
+      if (attempt.ok) {
+        const text = (attempt.data.candidates?.[0]?.content?.parts || [])
+          .filter((p) => !p.thought)
+          .map((p) => p.text || "")
+          .join("")
+          .trim();
+        if (text) return text;
+      } else {
+        const errMsg = attempt.data?.error?.message || `HTTP ${attempt.status}`;
+        if (attempt.status !== 404 || !primaryError) {
+          primaryError = `[${clean}]: ${errMsg}`;
+        }
+        // If Google's error message tells us which model to use (e.g. "use models/gemini-3.8-flash"), extract and call it immediately!
+        const matchSuggested = errMsg.match(/models\/([a-zA-Z0-9._-]+)/);
+        if (matchSuggested && matchSuggested[1] && !tried.has(matchSuggested[1])) {
+          const suggestedReply = await trySingleModel(matchSuggested[1]);
+          if (suggestedReply) return suggestedReply;
         }
       }
       return "";
     }
 
-    reply = await tryModelList(baseCandidates);
+    for (const model of candidates) {
+      reply = await trySingleModel(model);
+      if (reply) break;
+    }
 
-    // Dynamic fallback: query ListModels on the user's API key if static list didn't match
+    // If none of the static candidates worked, query ListModels dynamically
     if (!reply) {
       const discovered = await discoverAvailableModels(key);
-      const unseen = discovered.filter((m) => !baseCandidates.includes(m));
-      if (unseen.length > 0) {
-        reply = await tryModelList(unseen.slice(0, 6));
+      for (const model of discovered.slice(0, 6)) {
+        reply = await trySingleModel(model);
+        if (reply) break;
       }
     }
 
