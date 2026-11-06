@@ -1,5 +1,5 @@
-// Vercel Serverless Function: Y.O.K.E. Ultra-Fast Conversational Engine (v20)
-// Responds immediately after text by caching the working model & racing fast models in parallel with thinkingBudget: 0!
+// Vercel Serverless Function: Y.O.K.E. Ultra-Fast Conversational Engine (v21)
+// Uses verified production Gemini Flash models in parallel + caches winning model for instant replies.
 
 let cachedWorkingModel = null;
 
@@ -8,15 +8,15 @@ async function callModelFast(key, model, systemPrompt, recent, useNoThinking = t
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(key)}`;
 
   const genConfig = {
-    temperature: 0.8,
-    maxOutputTokens: 180
+    temperature: 0.82,
+    maxOutputTokens: 200
   };
-  if (useNoThinking && (cleanModel.includes("2.5") || cleanModel.includes("3"))) {
+  if (useNoThinking && cleanModel.includes("2.5")) {
     genConfig.thinkingConfig = { thinkingBudget: 0 };
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 6500);
+  const timer = setTimeout(() => controller.abort(), 7000);
 
   try {
     const r = await fetch(url, {
@@ -41,16 +41,14 @@ async function callModelFast(key, model, systemPrompt, recent, useNoThinking = t
       if (text) return { ok: true, reply: text, model: cleanModel };
     }
 
-    // If thinkingConfig caused a 400 error on this model, immediately retry without thinkingConfig
     if (r.status === 400 && useNoThinking && genConfig.thinkingConfig) {
       return await callModelFast(key, cleanModel, systemPrompt, recent, false);
     }
 
     const errMsg = data?.error?.message || `HTTP ${r.status}`;
-    // If Google's error message tells us which model to use (e.g., "use models/gemini-3.8-flash"), call it immediately!
     const matchSuggested = errMsg.match(/models\/([a-zA-Z0-9._-]+)/);
     if (matchSuggested && matchSuggested[1] && matchSuggested[1] !== cleanModel) {
-      return await callModelFast(key, matchSuggested[1], systemPrompt, recent, true);
+      return await callModelFast(key, matchSuggested[1], systemPrompt, recent, false);
     }
 
     return { ok: false, status: r.status, error: `[${cleanModel}]: ${errMsg}`, model: cleanModel };
@@ -83,7 +81,7 @@ module.exports = async function handler(req, res) {
   if (!key) {
     return res.status(500).json({
       error: "MISSING_API_KEY",
-      message: "API key is not set in Vercel Environment Variables (or config.js)."
+      message: "GEMINI_API_KEY is not set in Vercel Environment Variables."
     });
   }
 
@@ -93,16 +91,15 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: "history is empty" });
     }
 
-    // Keep last 6 turns for sub-second response speed
     const recent = history.slice(-6).map((m) => ({
       role: m.role === "model" ? "model" : "user",
       parts: [{ text: String((m.parts && m.parts[0] && m.parts[0].text) || "").slice(0, 800) }]
     }));
 
     const systemPrompt = String(body.systemPrompt || "").slice(0, 3500) +
-      "\nKeep reply concise (1-2 natural sentences in Chennai Tanglish/Tamil). Never mention Gemini. No emojis.";
+      "\nKeep reply concise (1-2 natural affectionate sentences in Chennai Tanglish/Tamil). Never mention Gemini. No emojis.";
 
-    // 1. If we already know the working fast model (from client cache or server memory), call it directly first!
+    // 1. Direct hit if cached working model is known
     const fastTarget = body.preferredModel || process.env.GEMINI_MODEL || cachedWorkingModel;
     if (fastTarget) {
       const directHit = await callModelFast(key, fastTarget, systemPrompt, recent, true);
@@ -112,14 +109,13 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // 2. Otherwise, race the top fast models in PARALLEL so whichever model is active on this API key answers immediately without sequential waiting!
+    // 2. Race verified production Gemini Flash models in parallel
     const parallelCandidates = [
-      "gemini-3.8-flash",
-      "gemini-3-flash-preview",
-      "gemini-3.1-flash-lite-preview",
+      "gemini-2.5-flash",
       "gemini-2.5-flash-lite",
-      "gemini-flash-latest",
-      "gemini-2.0-flash"
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-flash-latest"
     ];
 
     let winner = null;
@@ -138,7 +134,7 @@ module.exports = async function handler(req, res) {
       winner = null;
     }
 
-    // 3. If parallel race didn't find one, dynamically query ListModels once
+    // 3. Dynamic ListModels fallback if needed
     if (!winner) {
       try {
         const lr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
@@ -153,8 +149,8 @@ module.exports = async function handler(req, res) {
             )
             .map((m) => String(m.name).replace(/^models\//, ""));
 
-          for (const dm of discovered.slice(0, 4)) {
-            const attempt = await callModelFast(key, dm, systemPrompt, recent, true);
+          for (const dm of discovered.slice(0, 5)) {
+            const attempt = await callModelFast(key, dm, systemPrompt, recent, false);
             if (attempt.ok && attempt.reply) {
               winner = attempt;
               break;
@@ -173,7 +169,6 @@ module.exports = async function handler(req, res) {
 
     cachedWorkingModel = winner.model;
 
-    // Non-blocking Google Drive Cloud Sync
     const gdriveUrl = process.env.GDRIVE_WEBHOOK_URL || body.gdriveWebhookUrl;
     if (gdriveUrl && gdriveUrl.startsWith("https://script.google.com/")) {
       const lastUserMsg = recent[recent.length - 1]?.parts?.[0]?.text || "";
@@ -192,7 +187,6 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({ reply: winner.reply, model: winner.model });
   } catch (e) {
-    console.error("chat.js error:", e);
     return res.status(500).json({ error: "SERVER_ERROR", message: e.message });
   }
 };

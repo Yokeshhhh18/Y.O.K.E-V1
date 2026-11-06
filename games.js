@@ -7,8 +7,8 @@
   const her = (typeof CONFIG !== "undefined" && CONFIG.HER_NAME) || "Dhanya";
   const you = (typeof CONFIG !== "undefined" && CONFIG.YOUR_NAME) || "Yokesh";
 
-  const HER_ICON = (typeof CONFIG !== "undefined" && CONFIG.XO_HER_ICON) || "images/xo_her.png";
-  const ME_ICON = (typeof CONFIG !== "undefined" && CONFIG.XO_ME_ICON) || "images/xo_me.png";
+  const HER_ICON = (window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.XO_HER_ICON) || (typeof CONFIG !== "undefined" && CONFIG.XO_HER_ICON) || "images/xo_her.png";
+  const ME_ICON = (window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.XO_ME_ICON) || (typeof CONFIG !== "undefined" && CONFIG.XO_ME_ICON) || "images/xo_me.png";
 
   let questCompleted = false;
   try {
