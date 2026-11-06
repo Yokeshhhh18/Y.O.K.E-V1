@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>Y.O.K.E. — For Dhanya, Forever Dhanya</title>
+  <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -36,7 +37,7 @@
     <!-- PANEL 1: HAPPY -->
     <div id="jnStage1" class="jn-stage jn-panel-card">
       <div class="jn-img-wrap">
-        <img id="panel1Pic" src="images/panel1.png" alt="Yokesh">
+        <img id="panel1Pic" alt="Yokesh">
       </div>
       <div class="jn-text-below">
         <h1 class="jn-slam-text">HAPPY</h1>
@@ -46,7 +47,7 @@
     <!-- PANEL 2: BIRTHDAY -->
     <div id="jnStage2" class="jn-stage jn-panel-card">
       <div class="jn-img-wrap">
-        <img id="panel2Pic" src="images/panel2.png" alt="Dhanya">
+        <img id="panel2Pic" alt="Dhanya">
       </div>
       <div class="jn-text-below">
         <h1 class="jn-slam-text">BIRTHDAY</h1>
@@ -56,7 +57,7 @@
     <!-- PANEL 3: CHELLO -->
     <div id="jnStage3" class="jn-stage jn-panel-card">
       <div class="jn-img-wrap">
-        <img id="panel3Pic" src="images/panel3.png" alt="Us Together">
+        <img id="panel3Pic" alt="Us Together">
       </div>
       <div class="jn-text-below">
         <h1 class="jn-slam-text">CHELLO</h1>
@@ -66,7 +67,7 @@
     <!-- PANEL 4: HAPPY BIRTHDAY CHELLO (UNBLURRED, 3-BANG SLAM) -->
     <div id="jnStage4" class="jn-stage jn-panel-card">
       <div class="jn-img-wrap">
-        <img id="panel4Pic" src="images/panel3.png" alt="Happy Birthday Chello">
+        <img id="panel4Pic" alt="Happy Birthday Chello">
       </div>
       <div class="jn-text-below">
         <div class="jn-bang-row">
@@ -161,9 +162,9 @@
       <!-- TAB 1: X-O BATTLE -->
       <div id="xoView" class="game-view">
         <div class="xo-scoreboard">
-          <div class="score-pill her-s"><img src="images/xo_her.png" class="score-mini-av" alt=""> <span class="her"></span>: <b id="scoreHer">0</b></div>
+          <div class="score-pill her-s"><img id="xoHerScoreImg" class="score-mini-av xo-her-img" alt=""> <span class="her"></span>: <b id="scoreHer">0</b></div>
           <div class="score-pill draw-s">Draw: <b id="scoreDraw">0</b></div>
-          <div class="score-pill yoke-s"><img src="images/xo_me.png" class="score-mini-av" alt=""> <span class="you-cine"></span>: <b id="scoreYoke">0</b></div>
+          <div class="score-pill yoke-s"><img id="xoMeScoreImg" class="score-mini-av xo-me-img" alt=""> <span class="you-cine"></span>: <b id="scoreYoke">0</b></div>
         </div>
         <div id="xoStatus" class="xo-status">Un turn dhan chello! Tap a box to place your Queen Doll</div>
         <div class="xo-board-wrap">
@@ -215,7 +216,7 @@
           <h3 class="game-title">Nee Sonna Maadhiriye Senjuten Chello!</h3>
           <p class="game-sub">You asked me to make a heart with my hair... here is your proof:</p>
           <div class="quest-photo-frame">
-            <img src="images/quest_hair_heart.jpg" alt="Yokesh Hair Heart for Dhanya">
+            <img id="questRewardImg" class="quest-hair-img" alt="Yokesh Hair Heart for Dhanya">
             <div class="quest-photo-caption">Nee sonna oru chinna vishayatha kooda naan marakka maaten, en Chello.</div>
           </div>
           <div class="quest-final-actions">
@@ -332,6 +333,7 @@
     </main>
   </div>
 
+  <script src="inline-images.js"></script>
   <script src="config.js"></script>
   <script src="fx.js"></script>
   <script src="games.js"></script>

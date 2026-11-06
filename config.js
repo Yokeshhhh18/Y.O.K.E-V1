@@ -19,16 +19,16 @@ const CONFIG = {
   GDRIVE_CLOUD_URL: "https://script.google.com/macros/s/AKfycbwhas2_Is88Od53Q9PEFY-wfhLq5adI5VgVvssb1ASlYboZIx9yynyB-uXTu8-iyItGkQ/exec",
 
   // Widescreen Full-Wide Intro Panels (Natural ~3:1 Aspect Ratio, Unblurred)
-  PANEL_1: "images/panel1.png",
-  PANEL_2: "images/panel2.png",
-  PANEL_3: "images/panel3.png",
-  PANEL_4: "images/panel3.png",
+  PANEL_1: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.PANEL_1) || "images/panel1.png",
+  PANEL_2: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.PANEL_2) || "images/panel2.png",
+  PANEL_3: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.PANEL_3) || "images/panel3.png",
+  PANEL_4: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.PANEL_3) || "images/panel3.png",
 
   // Face-centered Avatar & 3D Chibi Doll Icons + Secret 2-Level Quest Image
-  YOUR_PIC: "images/avatar.jpg",
-  XO_HER_ICON: "images/xo_her.png",
-  XO_ME_ICON: "images/xo_me.png",
-  QUEST_REWARD_IMAGE: "images/quest_hair_heart.jpg",
+  YOUR_PIC: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.YOUR_PIC) || "images/avatar.jpg",
+  XO_HER_ICON: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.XO_HER_ICON) || "images/xo_her.png",
+  XO_ME_ICON: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.XO_ME_ICON) || "images/xo_me.png",
+  QUEST_REWARD_IMAGE: (typeof window !== "undefined" && window.YOKE_INLINE_IMAGES && window.YOKE_INLINE_IMAGES.QUEST_REWARD_IMAGE) || "images/quest_hair_heart.jpg",
 
   // Natural, warm human opening messages
   TUTORIAL: [

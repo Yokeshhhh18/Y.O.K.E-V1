@@ -101,10 +101,13 @@ safeImg($("panel2Pic"), panel2Src, INLINE_IMGS.PANEL_2);
 safeImg($("panel3Pic"), panel3Src, INLINE_IMGS.PANEL_3);
 safeImg($("panel4Pic"), panel4Src, INLINE_IMGS.PANEL_3);
 
-// Also bind scoreboard & quest modal images so they never 404
-document.querySelectorAll('img[src*="xo_her"]').forEach((img) => safeImg(img, xoHerSrc, INLINE_IMGS.XO_HER_ICON));
-document.querySelectorAll('img[src*="xo_me"]').forEach((img) => safeImg(img, xoMeSrc, INLINE_IMGS.XO_ME_ICON));
-document.querySelectorAll('img[src*="quest_hair_heart"]').forEach((img) => safeImg(img, questPicSrc, INLINE_IMGS.QUEST_REWARD_IMAGE));
+// Bind scoreboard & quest modal images via IDs, classes, or src attributes so zero 404 requests ever fire
+safeImg($("xoHerScoreImg"), xoHerSrc, INLINE_IMGS.XO_HER_ICON);
+safeImg($("xoMeScoreImg"), xoMeSrc, INLINE_IMGS.XO_ME_ICON);
+safeImg($("questRewardImg"), questPicSrc, INLINE_IMGS.QUEST_REWARD_IMAGE);
+document.querySelectorAll('.xo-her-img, img[src*="xo_her"]').forEach((img) => safeImg(img, xoHerSrc, INLINE_IMGS.XO_HER_ICON));
+document.querySelectorAll('.xo-me-img, img[src*="xo_me"]').forEach((img) => safeImg(img, xoMeSrc, INLINE_IMGS.XO_ME_ICON));
+document.querySelectorAll('.quest-hair-img, img[src*="quest_hair_heart"]').forEach((img) => safeImg(img, questPicSrc, INLINE_IMGS.QUEST_REWARD_IMAGE));
 
 // ---------- Subtle Ambient Particles ----------
 const HEARTS = ["•", "✦", "✧"];
